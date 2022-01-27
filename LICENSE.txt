@@ -1,0 +1,6 @@
+Copyright Marc C. Perkins
+Jyväskylä, Finland
+
+Application is currently not licensed for distribution.
+
+Plan is to license it Creative Commons.
