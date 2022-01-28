@@ -1,5 +1,6 @@
 #File to hold base variable sructures and core functions of the Opin Suomea app
 
+import config
 import json
 import os
 import sqlite3
@@ -50,3 +51,5 @@ class unit:
     description = ""
     update_date = ""
     other_info = ""
+
+

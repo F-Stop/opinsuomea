@@ -1,13 +1,15 @@
+import config
 import opinsuomea_utils as osu
 import file_importer as osfile
 import gameplay as gp
 import random
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
 
+# Configuration setting, including config file name, are found in config.py
+#   To pull config variable value, use config.jsonconfigdata['key']
+#   To chagne config variable, call config.setconfigvariable(key, value)
 
-#Things to add:
-# Create config file
-# Cofig file contains: default session length, whether to check for lower case, ...
+
 
 
 def print_hi(name):
@@ -68,8 +70,15 @@ def mainmenu(verbs, units, lauset):
 #Main portion
 if __name__ == '__main__':
     print_hi('Something')
+    #jsonconfigdata = osu.openconfigfile(configfilename)
     wb, verbsheet, unitsheets = osfile.openfile()
     verbs, units, lauset, errorlist = osfile.parsefile(wb, verbsheet, unitsheets)
+
+    print("Default question number is: ", config.jsonconfigdata['default_session_length'])
+    if config.jsonconfigdata['kirjakieli']:
+        print('Kirjakieli lauset okei!')
+
+
 
     print_notes()
 

@@ -1,6 +1,7 @@
 import os
 import opinsuomea_utils as osu
 from openpyxl import load_workbook
+import config
 
 datafilename = "OpinSuomea - Lause tiedot.xlsx"
 #datafilename = "OpinSuomea - Lause tiedot - error test.xlsx"

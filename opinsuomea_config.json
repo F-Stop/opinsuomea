@@ -1,0 +1,12 @@
+{
+  "info" : "Configuration file for OpinSuomea",
+  "default_session_length" : 2,
+  "check_case" : false,
+  "kirjakieli" : true,
+  "puhekieli" : true,
+  "moreinfo" : [
+    {"GitHub page" : "https://github.com/F-Stop/opinsuomea"},
+    {"Developed by" :  "Marc Perkins"}
+  ]
+
+}

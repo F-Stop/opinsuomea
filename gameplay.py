@@ -1,15 +1,15 @@
-import opinsuomea_utils as osu
 import random
+import config
+import opinsuomea_utils as osu
 
-defaultmax = 2 # default number of sentences to do
 
 def selectnum(lauset):
     print("We have {} setnences in this set".format(len(lauset)))
     #Select how many to do
     while True:
-        numtodo = input("How many sentences do you want to do? (default: {})".format(defaultmax))
+        numtodo = input("How many sentences do you want to do? (default: {})".format(config.jsonconfigdata['default_session_length']))
         if numtodo == "":
-            max = defaultmax
+            max = config.jsonconfigdata['default_session_length']
             print("Okay, we will do {} sentences.".format(max))
             break
         try:
@@ -23,31 +23,53 @@ def selectnum(lauset):
             print("You did not enter an integer.  Try again!")
     return max
 
+def checkanswer(answer, vastaus):
+    if not config.jsonconfigdata["check_case"]:
+        answer = answer.lower()
+        vastaus = vastaus.lower()
+    if answer == vastaus:
+        return True
+    else:
+        return False
+
 def playround(verbs, units, lauset, max):
     numcorrect = 0
     numwrong = 0
     for number in range(max):
         #print("run ", number)
-        print("")
-        print("")
+        # Select a sentence
         lausetodo = random.randint(0,len(lauset)-1)
         currentlause = lauset[lausetodo]
-        print("Verb to use:", currentlause.verbi_inf)
-        print("Which means:", verbs[currentlause.verbi_inf].englanniksi)
-        print("Lause on:   ", currentlause.lause)
-        print("Englanniksi:", currentlause.lause_englanniksi)
+
+        #display info and get input
+        print("")
+        print("")
+        print("Verbi käyttää  :", currentlause.verbi_inf)
+        print("Joka tarkoittaa:", verbs[currentlause.verbi_inf].englanniksi)
+        print("")
+        print("Lause on:       ", currentlause.lause)
+        print("Englanniksi:    ", currentlause.lause_englanniksi)
+        print("")
         answer = input("Type your answer: ")
-        if answer.lower() == currentlause.verbi_vastaus.lower():
+
+        #check answer and act accordingly
+        iscorrect = checkanswer(answer, currentlause.verbi_vastaus)
+        if iscorrect:
             print("Woohoo!  You are correct!")
             numcorrect += 1
         else:
+            print("Oh no!  Not quite right.")
             numwrong += 1
             print("Your entry:  ", answer)
             print("Correct ans: ", currentlause.verbi_vastaus)
-            while True:
-                answer2 = input("\nType it correctly:")
-                if answer2.lower() == currentlause.verbi_vastaus.lower():
-                    print("Great job")
+            while True: #ask them to type it correctly, or enter to skip
+                answer2 = input("\nType it correctly (enter to skip):")
+                iscorrect2 = checkanswer(answer2, currentlause.verbi_vastaus)
+                if iscorrect2:
+                    print("Great job!")
+                    break
+                elif answer2 == "":
+                    print("Yeah, that was a tough one.  Let's move on.")
                     break
                 else:
                     print("Your entry:  ", answer)
