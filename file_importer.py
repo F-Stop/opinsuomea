@@ -7,7 +7,7 @@ datafilename = "OpinSuomea - Lause tiedot.xlsx"
 #datafilename = "OpinSuomea - Lause tiedot - error test.xlsx"
 
 appfolder = os.path.dirname(__file__)
-datafolder = os.path.join(appfolder, "data")
+datafolder = os.path.join(appfolder, config.jsonconfigdata["data_folder"])
 datafile = os.path.join(datafolder, datafilename)
 
 
@@ -28,6 +28,7 @@ def openfile():
     for sheet in wb:
         print(sheet.title)
     print("\nThis list should include only unit worksheets:")
+    unitsheets = []
     for sheet in wb:
         if sheet.title == "Template":
             continue
@@ -35,11 +36,11 @@ def openfile():
             continue
         if sheet.title == "Verbit":
             verbsheet = sheet
-            print(sheet.title)
+            #print(sheet.title)
             continue
         #Everything else should be unit sheets
-        unitsheets = []
         unitsheets.append(sheet)
+        print(sheet.title)
 
     print("\nSheet info")
     print("Verb sheet:", verbsheet.title)
@@ -82,7 +83,7 @@ def parseunits(unitsheets, verbs):
         #first get basic info on unit:
         currentunit = osu.unit()
         if unit["A1"].value == "Unit number":
-            currentunit.number = unit["B1"].value
+            currentunit.humanid = unit["B1"].value
         else:
             print("WARNING: No unit number detected")
             errorlist.append("Unit parsing error: No unit number detected for unit {}".format(unit))
@@ -112,25 +113,25 @@ def parseunits(unitsheets, verbs):
         print("Starting sentence import.")
 
         #Pull all sentences from the unit
-
         count = 0
         for row in unit.iter_rows(min_row=8):
             count += 1
             currentlause = osu.lause()
             #print(row[0].value, row[1].value)
-            currentlause.unitid = currentunit.number
-            if row[0].value.lower() == "kirjakieli":
+            currentlause.unithumanid = currentunit.humanid
+
+            currentlause.humanid = row[0].value
+            if row[1].value.lower() == "kirjakieli":
                 currentlause.kirjakieli = True
-            elif row[0].value.lower() == "puhekieli":
-                currentlause.kirjakieli = True
+            elif row[1].value.lower() == "puhekieli":
+                currentlause.puhekieli = True
             else:
                 print("WARNING: ei puhekili ta kirjakieli lausessa")
                 errorlist.append("WARNING: ei puhekili ta kirjakieli lausessa for lause {}".format(row[3].value))
-
-            currentlause.verbi_inf = row[1].value
-            currentlause.verbi_vastaus = row[2].value
-            currentlause.lause = row[3].value
-            currentlause.lause_englanniksi = row[4].value
+            currentlause.verbi_inf = row[2].value
+            currentlause.verbi_vastaus = row[3].value
+            currentlause.lause = row[4].value
+            currentlause.lause_englanniksi = row[5].value
 
             # check and see if verb in the unit spreadsheet is in the verb dictionary
             try:

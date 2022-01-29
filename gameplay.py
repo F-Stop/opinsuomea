@@ -76,8 +76,36 @@ def playround(verbs, units, lauset, max):
                     print("Correct ans: ", currentlause.verbi_vastaus)
     return numcorrect, numwrong
 
-def startgame(verbs, units, lauset):
-    print("GAME ON!")
+def startgame(conn, cur):
+    print("\nGAME ON!\n")
+
+    unitlist = osu.pullunits(conn, cur)
+
+    print("Here are the units we have:")
+    count = 1
+    print("# - Unit name - Unit Description")
+    for unit in unitlist:
+        print(count, "-", unit.humanid, "",unit.name, "-", unit.description)
+        count += 1
+    while True:
+        unitchoicetext = input("What unit would you like to play today?")
+        try:
+            unitchoice = int(unitchoicetext)
+            if unitchoice < 1:
+                print("Please enter a valid number")
+                continue
+            chosenunit = unitlist[unitchoice - 1]
+            unitdbid = chosenunit.dbid  #unit index is 0 based, whereas my display was 1 based
+            break
+        except:
+            print("Please enter a valid number")
+
+    print("Alright, we are going to do unit: ", chosenunit.name)
+
+def cutgamebitsfornow():
+
+    lauset = osu.getlause(chosenunit)
+
     while True:
         max = selectnum(lauset)
         numcorrect, numwrong = playround(verbs, units, lauset, max)

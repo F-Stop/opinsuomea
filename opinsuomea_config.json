@@ -4,6 +4,10 @@
   "check_case" : false,
   "kirjakieli" : true,
   "puhekieli" : true,
+  "data_folder" : "data",
+  "test_database" : "test_opinsuomea_db",
+  "prod_database" : "opinsuomea_db",
+  "Use_test_database" : true,
   "moreinfo" : [
     {"GitHub page" : "https://github.com/F-Stop/opinsuomea"},
     {"Developed by" :  "Marc Perkins"}

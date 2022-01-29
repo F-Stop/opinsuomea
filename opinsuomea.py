@@ -2,6 +2,7 @@ import config
 import opinsuomea_utils as osu
 import file_importer as osfile
 import gameplay as gp
+import db_creator
 import random
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
 
@@ -18,7 +19,15 @@ def print_hi(name):
     print("Currently this is a super-duper-mega-ultra Alpha")
 
 def print_notes():
-    print("NOTE: Current all comparisons are done in lower case.")
+    return
+
+def wipe_and_reload_db_from_file():
+    wb, verbsheet, unitsheets = osfile.openfile()
+    verblist, unitlist, lauselist, errorlist = osfile.parsefile(wb, verbsheet, unitsheets)
+    db_creator.createnewdb("USEDEFAULTDB") #passing fake name to get that function to use the default db selected in preferences
+    conn, cur = osu.connectdb()
+    verblist, unitlist, lauselist, errorlist = osu.populate_dbs(verblist, unitlist, lauselist, errorlist, conn, cur)
+    print("\nAlright, you've got a nice fresh set of databases with new data loaded from the Excel file to use!")
 
 
 def optionsmenu():
@@ -41,24 +50,27 @@ def displaymainmenu():
     v - Print list of verbs
     s - Print list of sentences
     o - See options
+    d - Wipe database and reload verbs, units, and sentences from the Excel file
     q/Q - Quit""")
 
-def mainmenu(verbs, units, lauset):
+def mainmenu(conn, cur):
     while True:
         displaymainmenu()
         choice1 = input("Type the letter of your option: ")
         if choice1 == "1":
-            gp.startgame(verbs, units, lauset)
+            gp.startgame(conn, cur)
         elif choice1.lower() == "v":
             print("List of verbs")
-            for verb in verbs:
-                print(verb, "---", verbs[verb].englanniksi)
+            #for verb in verbs:
+            #    print(verb, "---", verbs[verb].englanniksi)
         elif choice1.lower() == "s":
             print("List of sentences")
-            for lause in lauset:
-                print(lause.lause, "---", lause.verbi_inf, "---", lause.verbi_vastaus, "---", lause.lause_englanniksi)
+            #for lause in lauset:
+            #    print(lause.lause, "---", lause.verbi_inf, "---", lause.verbi_vastaus, "---", lause.lause_englanniksi)
         elif choice1.lower() == "o":
             optionsmenu()
+        elif choice1.lower() == "d":
+            wipe_and_reload_db_from_file()
         elif choice1.lower() == "q":
             print("Thanks for using the app!")
             exit()
@@ -70,17 +82,7 @@ def mainmenu(verbs, units, lauset):
 #Main portion
 if __name__ == '__main__':
     print_hi('Something')
-    #jsonconfigdata = osu.openconfigfile(configfilename)
-    wb, verbsheet, unitsheets = osfile.openfile()
-    verbs, units, lauset, errorlist = osfile.parsefile(wb, verbsheet, unitsheets)
-
-    print("Default question number is: ", config.jsonconfigdata['default_session_length'])
-    if config.jsonconfigdata['kirjakieli']:
-        print('Kirjakieli lauset okei!')
-
-
-
     print_notes()
-
-    mainmenu(verbs, units, lauset)
+    conn, cur = osu.connectdb()
+    mainmenu(conn, cur)
 
