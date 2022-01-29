@@ -21,12 +21,19 @@ class lause:
     verbi_vastaus = "" #verb conjugated correctly
     verbi_inf = ""  #verb infinitive form (suomeksi)
     verbi_englanniksi = "" #verb definition (englanniksi)
+    points = None #track points assigned to sentence
+    lastplayed = None #Date of the last play
+    correctlastplay = None #track if the last play is correct
+    timesplayed = None
+    timescorrect = None
+    timeswrong = None
     substantiivi_dbid = None #Unused now, but place to hold nouns
     substantiivi_inf = ""  #noun general form
     substantiivi_vastaus = "" #noun conjugated correctly
     substantiivi_englanniksi = "" #noun definition (englanniksi)
     lause_reported = False #Flag to track if user has reported an error with the sentence
     lause_comments = [] #user comments on the sentence - will be list of strings.
+    errorflagindb = None #Flag to track if there is an error already recorded in the dB
     need_to_update = False #Flag to track if this sentence needs to be updated in dB (i.e., new user error report)
     väärä_vastaus = "" #place to track wrong answers
     jsondata = None  #always store this as DB-friendly JSON data, and parse it out when needed.
@@ -163,5 +170,50 @@ def pullunits(conn, cur):
         currentunit.other_info = item[5]
         currentunit.json = item[6]
         unitlist.append(currentunit)
-
     return unitlist
+
+
+def getlauselist(conn, cur, unitdbid, allunits = False, dbwhereclause = ""):
+    #dbwhere clause MUST start with "AND" or the like to form a legal SQL statement.
+    if allunits:
+        dbunitclause = ""
+    else:
+        dbunitclause = "AND Lause.kategoria_id = {} ".format(unitdbid)
+
+    sqlstring = """SELECT Verbi.infinitive, Verbi.englanti, Verbi.id, Kategoria.humanid, Kategoria.name, Lause.id, Lause.humanid, Lause.kategoria_id, Lause.lause, Lause.lause_eng, Lause.vastaus, Lause.kirjakieli, Lause.puhekieli, Lause.points, Lause.correctlastplay, Lause.timesplayed, Lause.timescorrect, Lause.timeswrong, Lause.lastplayed, Lause.errorflag, Lause.json 
+    FROM Verbi, Lause, Kategoria
+    WHERE  Lause.verbi_id = Verbi.id AND Lause.kategoria_id = Kategoria.id {} {}
+    ORDER BY Lause.points
+    """.format(dbunitclause, dbwhereclause)
+
+    cur.execute(sqlstring)
+    results = cur.fetchall()
+
+    lauselist = []
+    for result in results:
+        tamalause = lause()
+        #print(result)
+        tamalause.verbi_inf = result[0]
+        tamalause.verbi_englanniksi = result[1]
+        tamalause.verbi_dbid = result[2]
+        tamalause.unithumanid = result[3]
+        tamalause.unitname = result[4]
+        tamalause.dbid = result[5]
+        tamalause.humanid = result[6]
+        tamalause.unitdbid = result[7]
+        tamalause.lause = result[8]
+        tamalause.lause_englanniksi = result[9]
+        tamalause.verbi_vastaus = result[10]
+        tamalause.kirjakieli = result[11]
+        tamalause.puhekieli = result[12]
+        tamalause.points =  result[13]
+        tamalause.correctlastplay =  result[14]
+        tamalause.timesplayed = result[15]
+        tamalause.timescorrect =  result[16]
+        tamalause.timeswrong =  result[17]
+        tamalause.lastplayed =  result[18]
+        tamalause.errorflagindb =  result[19]
+        tamalause.jsondata =  result[20]
+        lauselist.append(tamalause)
+
+    return lauselist

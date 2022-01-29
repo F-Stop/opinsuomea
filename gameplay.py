@@ -1,4 +1,5 @@
 import random
+import time
 import config
 import opinsuomea_utils as osu
 
@@ -32,23 +33,40 @@ def checkanswer(answer, vastaus):
     else:
         return False
 
-def playround(verbs, units, lauset, max):
+def pickalause(lauselist, lausehistory):
+    #This is where our magic comes in to be smart about selecting sentences.
+
+
+    lausetodo = random.randint(0, len(lauselist) - 1)  #if we get complicated selection, break this out.
+    if lausetodo in lausehistory:
+        count = 0
+        while count < 5: # Try 5 times to get a sentence we haven't done this round yet. Give up after that.
+            count += 1
+            if lausetodo in lausehistory:
+                lausetodo = random.randint(0, len(lauselist) - 1)
+    lausehistory.append(lausetodo)
+    return lausetodo, lausehistory
+
+def playround(lauset, max):
     numcorrect = 0
     numwrong = 0
+    lausehistory = []
+    gotitright = False #flag for if the user got the answer correct.  We'll be pessimistic.
     for number in range(max):
         #print("run ", number)
         # Select a sentence
-        lausetodo = random.randint(0,len(lauset)-1)
+        lausetodo, lausehistory = pickalause(lauset, lausehistory)
         currentlause = lauset[lausetodo]
 
         #display info and get input
         print("")
         print("")
         print("Verbi käyttää  :", currentlause.verbi_inf)
-        print("Joka tarkoittaa:", verbs[currentlause.verbi_inf].englanniksi)
+        print("Joka tarkoittaa:", currentlause.verbi_englanniksi)
         print("")
         print("Lause on:       ", currentlause.lause)
         print("Englanniksi:    ", currentlause.lause_englanniksi)
+        if currentlause.puhekieli: print("CAUTION: Puhekieli!")
         print("")
         answer = input("Type your answer: ")
 
@@ -57,6 +75,8 @@ def playround(verbs, units, lauset, max):
         if iscorrect:
             print("Woohoo!  You are correct!")
             numcorrect += 1
+            gotitright = True
+            time.sleep(0.5)
         else:
             print("Oh no!  Not quite right.")
             numwrong += 1
@@ -74,21 +94,42 @@ def playround(verbs, units, lauset, max):
                 else:
                     print("Your entry:  ", answer)
                     print("Correct ans: ", currentlause.verbi_vastaus)
+
+        #Process end of setnence here - update DB, etc.
+        # Universal updates to currentlause
+        # Universal DB code update
+        if gotitright:
+            #Update currentlausevariable here.
+            #Add to DB update code here
+        else:
+            #Update currentlausevariable here.
+            #Add to DB update code here
+
+        #SQL to update DB.
     return numcorrect, numwrong
 
 def startgame(conn, cur):
+
+    #Start by choosing a unit or units to do.
+    #then choose how many sentences to do
+
+    doall = False   # flag to allow user to select wanting to do all of the units
     print("\nGAME ON!\n")
 
     unitlist = osu.pullunits(conn, cur)
 
-    print("Here are the units we have:")
-    count = 1
+    print("Here are the units we have:\n")
     print("# - Unit name - Unit Description")
+    count = 1
     for unit in unitlist:
         print(count, "-", unit.humanid, "",unit.name, "-", unit.description)
         count += 1
     while True:
-        unitchoicetext = input("What unit would you like to play today?")
+        unitchoicetext = input("\nWhat unit would you like to play today? (# or enter to do ALL the units) ")
+        if unitchoicetext == "":
+            doall = True
+            unitdbid = 0 #placeholder.
+            break
         try:
             unitchoice = int(unitchoicetext)
             if unitchoice < 1:
@@ -100,15 +141,16 @@ def startgame(conn, cur):
         except:
             print("Please enter a valid number")
 
-    print("Alright, we are going to do unit: ", chosenunit.name)
+    if doall:
+        print("Alright, we are going to do ALL units.  Have fun ;)")
+    else:
+        print("Alright, we are going to do unit: ", chosenunit.name)
 
-def cutgamebitsfornow():
-
-    lauset = osu.getlause(chosenunit)
+    lauselist = osu.getlauselist(conn, cur, unitdbid, doall)
 
     while True:
-        max = selectnum(lauset)
-        numcorrect, numwrong = playround(verbs, units, lauset, max)
+        max = selectnum(lauselist)
+        numcorrect, numwrong = playround(lauselist, max)
         print("\nRESULTS:")
         print("Number correct: ", numcorrect)
         print("Number wrong: ", numwrong)
