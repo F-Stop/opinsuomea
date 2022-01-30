@@ -14,11 +14,13 @@ class lause:
     unitname = ""
     kirjakieli = False
     puhekieli = False
+    type = None #Type of thing missing - 1 = verb, 2 = noun (not implemented), 3 = other
     lause = "" #sentence with the verb missing
     lause_englanniksi = "" #Sentence in English
+    hint = "" #Hint field, especially for use with other-type sentences.
     lause_verbin_paikka = 0 #start position of verb in the sentence
     verbi_dbid = None
-    verbi_vastaus = "" #verb conjugated correctly
+    vastaus = "" #verb conjugated correctly
     verbi_inf = ""  #verb infinitive form (suomeksi)
     verbi_englanniksi = "" #verb definition (englanniksi)
     points = None #track points assigned to sentence
@@ -91,6 +93,10 @@ def populate_dbs(verblist, unitlist, lauselist, errorlist, conn, cur):
 
     #Verb work first
     print("Inserting verbs")
+
+    #First create a dummy record that has dashes, to prevent code blowups if accidentially searching this table for a sentence that has no verb
+    #   As I have hard-coded in a value of "-" if a setnence is not a verb-containing one.
+    cur.execute('''INSERT OR IGNORE INTO Verbi (infinitive, englanti, type) VALUES ("-", "-", "")''')
     for verb in verblist:
         #print(verb)
         #print(verblist[verb].englanniksi)
@@ -142,13 +148,14 @@ def populate_dbs(verblist, unitlist, lauselist, errorlist, conn, cur):
             lause_dbid = result[0]
         else:
             print(lause.humanid, "is a new lause.  Inserting.")
-            cur.execute('''INSERT OR IGNORE INTO Lause (humanid, kategoria_id, verbi_id, lause, lause_eng, vastaus, kirjakieli, puhekieli) VALUES (?, ?, ?, ?, ?, ?, ?, ?)''', (lause.humanid, unit_dbid, verb_dbid, lause.lause, lause.lause_englanniksi, lause.verbi_vastaus, lause.kirjakieli, lause.puhekieli))
+            cur.execute('''INSERT OR IGNORE INTO Lause (humanid, kategoria_id, verbi_id, lause, lause_eng, vastaus, kirjakieli, puhekieli, type, hint) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', (lause.humanid, unit_dbid, verb_dbid, lause.lause, lause.lause_englanniksi, lause.vastaus, lause.kirjakieli, lause.puhekieli, lause.type, lause.hint))
             conn.commit()
             cur.execute('''SELECT id FROM Lause WHERE (humanid) = ( ? )''', (lause.humanid,))
             lause_dbid = cur.fetchone()[0]
         lause.dbid = lause_dbid
         print("Lause ID is:", lause.dbid)
 
+    conn.commit()
     print("Completed database import.")
 
     return verblist, unitlist, lauselist, errorlist
@@ -180,7 +187,7 @@ def getlauselist(conn, cur, unitdbid, allunits = False, dbwhereclause = ""):
     else:
         dbunitclause = "AND Lause.kategoria_id = {} ".format(unitdbid)
 
-    sqlstring = """SELECT Verbi.infinitive, Verbi.englanti, Verbi.id, Kategoria.humanid, Kategoria.name, Lause.id, Lause.humanid, Lause.kategoria_id, Lause.lause, Lause.lause_eng, Lause.vastaus, Lause.kirjakieli, Lause.puhekieli, Lause.points, Lause.correctlastplay, Lause.timesplayed, Lause.timescorrect, Lause.timeswrong, Lause.lastplayed, Lause.errorflag, Lause.json 
+    sqlstring = """SELECT Verbi.infinitive, Verbi.englanti, Verbi.id, Kategoria.humanid, Kategoria.name, Lause.id, Lause.humanid, Lause.kategoria_id, Lause.lause, Lause.lause_eng, Lause.vastaus, Lause.kirjakieli, Lause.puhekieli, Lause.points, Lause.correctlastplay, Lause.timesplayed, Lause.timescorrect, Lause.timeswrong, Lause.lastplayed, Lause.errorflag, Lause.json, Lause.type, Lause.hint 
     FROM Verbi, Lause, Kategoria
     WHERE  Lause.verbi_id = Verbi.id AND Lause.kategoria_id = Kategoria.id {} {}
     ORDER BY Lause.points
@@ -203,7 +210,7 @@ def getlauselist(conn, cur, unitdbid, allunits = False, dbwhereclause = ""):
         tamalause.unitdbid = result[7]
         tamalause.lause = result[8]
         tamalause.lause_englanniksi = result[9]
-        tamalause.verbi_vastaus = result[10]
+        tamalause.vastaus = result[10]
         tamalause.kirjakieli = result[11]
         tamalause.puhekieli = result[12]
         tamalause.points =  result[13]
@@ -214,6 +221,8 @@ def getlauselist(conn, cur, unitdbid, allunits = False, dbwhereclause = ""):
         tamalause.lastplayed =  result[18]
         tamalause.errorflagindb =  result[19]
         tamalause.jsondata =  result[20]
+        tamalause.type = result[21]
+        tamalause.hint = result[22]
         lauselist.append(tamalause)
 
     return lauselist

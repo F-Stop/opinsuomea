@@ -1,4 +1,5 @@
 import os
+import time
 import opinsuomea_utils as osu
 from openpyxl import load_workbook
 import config
@@ -54,6 +55,13 @@ def parseverbs(verbsheet):
     verbdict = {}  #Dictionary of verbs - key is infinitive, item is the verb variable type.
     print("\nParsing verbs")
 
+    #Insert dummy row for setnences with no verbs
+    dummyverbi = osu.verbi()
+    dummyverbi.infinitive = "-"
+    dummyverbi.englanniksi = "-"
+    verbdict[dummyverbi.infinitive] = dummyverbi
+
+    #Now process verb list.
     for row in verbsheet.iter_rows(min_row=2):
         #print(row[0].value, row[1].value)
         currentverbi = osu.verbi()
@@ -82,7 +90,10 @@ def parseunits(unitsheets, verbs):
 
         #first get basic info on unit:
         currentunit = osu.unit()
-        if unit["A1"].value == "Unit number":
+        if unit["A1"].value == "Number of the unit (can include text, if you want)":
+            #OpenPyXl is importing numbers as floats - possibly look into this later.
+                #But the problem is, of course, that people could number units with floats.  Hm.
+            #print(type(unit["B1"].value))
             currentunit.humanid = unit["B1"].value
         else:
             print("WARNING: No unit number detected")
@@ -120,7 +131,10 @@ def parseunits(unitsheets, verbs):
             #print(row[0].value, row[1].value)
             currentlause.unithumanid = currentunit.humanid
 
+            # Column 1 has human ID
             currentlause.humanid = row[0].value
+
+            #Column 2 has type of language flag
             if row[1].value.lower() == "kirjakieli":
                 currentlause.kirjakieli = True
             elif row[1].value.lower() == "puhekieli":
@@ -128,10 +142,27 @@ def parseunits(unitsheets, verbs):
             else:
                 print("WARNING: ei puhekili ta kirjakieli lausessa")
                 errorlist.append("WARNING: ei puhekili ta kirjakieli lausessa for lause {}".format(row[3].value))
-            currentlause.verbi_inf = row[2].value
-            currentlause.verbi_vastaus = row[3].value
-            currentlause.lause = row[4].value
-            currentlause.lause_englanniksi = row[5].value
+
+            #Column 3 has type of thing missing flag
+            if row[2].value.lower() == "verb":
+                currentlause.type = 1
+            elif row[2].value.lower() == "noun":  #Not implemented yet.
+                currentlause.type = 2
+            elif row[2].value.lower() == "other":
+                currentlause.type = 3
+            else:
+                print("WARNING: type of thing missing field not recognized for lause {}".format(row[0].value))
+                errorlist.append("WARNING: type of thing missing field not recognized for lause {}".format(row[0].value))
+
+            if currentlause.type == 1:
+                currentlause.verbi_inf = row[3].value
+            else:
+                currentlause.verbi_inf = "-"   #hard-coding in a dash here to prevent DB errors when coding searches with empty verb field.
+
+            currentlause.hint = row[4].value
+            currentlause.vastaus = row[5].value
+            currentlause.lause = row[6].value
+            currentlause.lause_englanniksi = row[7].value
 
             # check and see if verb in the unit spreadsheet is in the verb dictionary
             try:
@@ -171,3 +202,7 @@ def parsefile(wb, verbsheet, unitsheets):
 
 if __name__ == "__main__":
     print("Executing this script directly, eh?  Try using opinsuomea.py - this isn't supposed to be run on its own.")
+    time.sleep(5)
+    print("Continuing, but all data will just be discarded at the end")
+    wb, verbsheet, unitsheets = openfile()
+    verblist, unitlist, lauselist, errorlist = parsefile(wb, verbsheet, unitsheets)

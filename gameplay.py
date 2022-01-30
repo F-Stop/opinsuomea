@@ -1,6 +1,7 @@
 import random
 import time
 import config
+import datetime
 import opinsuomea_utils as osu
 
 
@@ -36,18 +37,27 @@ def checkanswer(answer, vastaus):
 def pickalause(lauselist, lausehistory):
     #This is where our magic comes in to be smart about selecting sentences.
 
+    topscore = None
+    bottomscore = None
+    for lause in lauselist:
+        if topscore == None: topscore = lause.points
+        if bottomscore == None: bottomscore = lause.points
+        if topscore < lause.points: topscore = lause.points
+        if bottomscore > lause.points: bottomscore = lause.points
+
+    #Add in mechanism here to scale liklihood each sentence is picked by score.
 
     lausetodo = random.randint(0, len(lauselist) - 1)  #if we get complicated selection, break this out.
     if lausetodo in lausehistory:
         count = 0
-        while count < 5: # Try 5 times to get a sentence we haven't done this round yet. Give up after that.
+        while count < 7: # Try 7 times to get a sentence we haven't done this round yet. Give up after that.
             count += 1
             if lausetodo in lausehistory:
                 lausetodo = random.randint(0, len(lauselist) - 1)
     lausehistory.append(lausetodo)
     return lausetodo, lausehistory
 
-def playround(lauset, max):
+def playround(lauset, max, conn, cur):
     numcorrect = 0
     numwrong = 0
     lausehistory = []
@@ -63,6 +73,8 @@ def playround(lauset, max):
         print("")
         print("Verbi käyttää  :", currentlause.verbi_inf)
         print("Joka tarkoittaa:", currentlause.verbi_englanniksi)
+        if currentlause.hint is not None:
+            print("Vihje          :", currentlause.hint)
         print("")
         print("Lause on:       ", currentlause.lause)
         print("Englanniksi:    ", currentlause.lause_englanniksi)
@@ -71,7 +83,7 @@ def playround(lauset, max):
         answer = input("Type your answer: ")
 
         #check answer and act accordingly
-        iscorrect = checkanswer(answer, currentlause.verbi_vastaus)
+        iscorrect = checkanswer(answer, currentlause.vastaus)
         if iscorrect:
             print("Woohoo!  You are correct!")
             numcorrect += 1
@@ -80,11 +92,12 @@ def playround(lauset, max):
         else:
             print("Oh no!  Not quite right.")
             numwrong += 1
+            gotitright = False
             print("Your entry:  ", answer)
-            print("Correct ans: ", currentlause.verbi_vastaus)
+            print("Correct ans: ", currentlause.vastaus)
             while True: #ask them to type it correctly, or enter to skip
                 answer2 = input("\nType it correctly (enter to skip):")
-                iscorrect2 = checkanswer(answer2, currentlause.verbi_vastaus)
+                iscorrect2 = checkanswer(answer2, currentlause.vastaus)
                 if iscorrect2:
                     print("Great job!")
                     break
@@ -93,20 +106,33 @@ def playround(lauset, max):
                     break
                 else:
                     print("Your entry:  ", answer)
-                    print("Correct ans: ", currentlause.verbi_vastaus)
+                    print("Correct ans: ", currentlause.vastaus)
 
         #Process end of setnence here - update DB, etc.
-        # Universal updates to currentlause
-        # Universal DB code update
+
+        #Universal updates:
+        currentlause.timesplayed += 1
+        currentlause.lastplayed = datetime.datetime.now()
+
         if gotitright:
-            #Update currentlausevariable here.
-            #Add to DB update code here
+            currentlause.timescorrect += 1
+            currentlause.points += 2
+            currentlause.correctlastplay = True
         else:
+            currentlause.timeswrong += 1
+            currentlause.points -= 1
+            currentlause.correctlastplay = False
             #Update currentlausevariable here.
             #Add to DB update code here
 
-        #SQL to update DB.
-    return numcorrect, numwrong
+        #Store setnence back in memory Lause list:
+        lauset[lausetodo] = currentlause
+
+        #Store in DB:
+        sqlstring = "UPDATE Lause SET timesplayed = ?, lastplayed = ?, points = ?, correctlastplay = ?, timescorrect = ?, timeswrong = ? WHERE id = ?"
+        cur.execute(sqlstring, (currentlause.timesplayed, currentlause.lastplayed, currentlause.points, currentlause.correctlastplay, currentlause.timescorrect, currentlause.timeswrong, currentlause.dbid))
+        conn.commit()
+    return lauset, numcorrect, numwrong
 
 def startgame(conn, cur):
 
@@ -150,7 +176,7 @@ def startgame(conn, cur):
 
     while True:
         max = selectnum(lauselist)
-        numcorrect, numwrong = playround(lauselist, max)
+        lauselist, numcorrect, numwrong = playround(lauselist, max, conn, cur)
         print("\nRESULTS:")
         print("Number correct: ", numcorrect)
         print("Number wrong: ", numwrong)
