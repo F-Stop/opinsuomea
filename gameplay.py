@@ -2,6 +2,7 @@ import random
 import time
 import config
 import datetime
+import statistics
 import opinsuomea_utils as osu
 
 
@@ -34,26 +35,54 @@ def checkanswer(answer, vastaus):
     else:
         return False
 
+def selectionalgorithm(lauselist, lausehistory):
+    scores = []
+    for lause in lauselist:
+        scores.append(lause.points)
+
+    #meanpoints = statistics.mean(scores)
+    #print("Average value of points: ", meanpoints)
+    tertilecutoffs = statistics.quantiles(scores, n=3)
+
+    selectionlist = []
+    for index, lause in enumerate(lauselist):
+        #add sentence index to the selection list varying times based on score
+        if lause.points <= tertilecutoffs[0]:
+            #in lower tertile
+            selectionlist += [index] * 3
+        elif lause.points >= tertilecutoffs[1]:
+            # in upper tertile
+            selectionlist += [index] * 1
+        else:
+            #middle quartile
+            selectionlist += [index] * 2
+
+        #make unplayed sentences more likely
+        if lause.timesplayed == 0:
+            selectionlist += [index] * 4
+
+    #print("Here is our randomization list:")
+    #print(selectionlist)
+
+    selectednumber = random.randint(0, len(selectionlist) - 1)
+    lausetodo = selectionlist[selectednumber]
+    #print("We seleced sentence number:", lausetodo)
+    return lausetodo
+
 def pickalause(lauselist, lausehistory):
     #This is where our magic comes in to be smart about selecting sentences.
+    # This function handles the basic ideas - don't repeat sentences, maybe try to end with a sentence we failed on
+    # selection algorithm is the actual math of picking a sentence.
 
-    topscore = None
-    bottomscore = None
-    for lause in lauselist:
-        if topscore == None: topscore = lause.points
-        if bottomscore == None: bottomscore = lause.points
-        if topscore < lause.points: topscore = lause.points
-        if bottomscore > lause.points: bottomscore = lause.points
+    #lausetodo is the position of the sentence in lauselist.
+    lausetodo = selectionalgorithm(lauselist, lausehistory)
 
-    #Add in mechanism here to scale liklihood each sentence is picked by score.
-
-    lausetodo = random.randint(0, len(lauselist) - 1)  #if we get complicated selection, break this out.
     if lausetodo in lausehistory:
         count = 0
         while count < 7: # Try 7 times to get a sentence we haven't done this round yet. Give up after that.
             count += 1
             if lausetodo in lausehistory:
-                lausetodo = random.randint(0, len(lauselist) - 1)
+                lausetodo = selectionalgorithm(lauselist, lausehistory)
     lausehistory.append(lausetodo)
     return lausetodo, lausehistory
 
@@ -71,13 +100,16 @@ def playround(lauset, max, conn, cur):
         #display info and get input
         print("")
         print("")
+        print("Englanniksi:    ", currentlause.lause_englanniksi)
+        print("Lause on:       ", currentlause.lause)
+        print("")
         print("Verbi käyttää  :", currentlause.verbi_inf)
         print("Joka tarkoittaa:", currentlause.verbi_englanniksi)
         if currentlause.hint is not None:
             print("Vihje          :", currentlause.hint)
-        print("")
-        print("Lause on:       ", currentlause.lause)
-        print("Englanniksi:    ", currentlause.lause_englanniksi)
+
+
+
         if currentlause.puhekieli: print("CAUTION: Puhekieli!")
         print("")
         answer = input("Type your answer: ")
@@ -129,8 +161,16 @@ def playround(lauset, max, conn, cur):
         lauset[lausetodo] = currentlause
 
         #Store in DB:
+        #store data in sentence table
         sqlstring = "UPDATE Lause SET timesplayed = ?, lastplayed = ?, points = ?, correctlastplay = ?, timescorrect = ?, timeswrong = ? WHERE id = ?"
         cur.execute(sqlstring, (currentlause.timesplayed, currentlause.lastplayed, currentlause.points, currentlause.correctlastplay, currentlause.timescorrect, currentlause.timeswrong, currentlause.dbid))
+
+        #store data in history table
+        wrongtext = None
+        if gotitright is False:
+            wrongtext = answer
+        sqlstring = "INSERT OR IGNORE INTO Historia (lause_id, category_id, verbi_id, datetime, gotcorrect, wrongtext, json) VALUES (?, ?, ?, ?, ?, ?, ?)"
+        cur.execute(sqlstring, (currentlause.dbid, currentlause.unitdbid, currentlause.verbi_dbid, currentlause.lastplayed, currentlause.correctlastplay, wrongtext, currentlause.jsondata))
         conn.commit()
     return lauset, numcorrect, numwrong
 
