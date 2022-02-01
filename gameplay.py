@@ -100,13 +100,18 @@ def playround(lauset, max, conn, cur):
         #display info and get input
         print("")
         print("")
+        print("")
+        print("")
         print("Englanniksi:    ", currentlause.lause_englanniksi)
         print("Lause on:       ", currentlause.lause)
         print("")
-        print("Verbi käyttää  :", currentlause.verbi_inf)
-        print("Joka tarkoittaa:", currentlause.verbi_englanniksi)
-        if currentlause.hint is not None:
-            print("Vihje          :", currentlause.hint)
+        if config.jsonconfigdata['show_verbi']:
+            print("Verbi käyttää  :", currentlause.verbi_inf)
+        if config.jsonconfigdata['show_verbi_eng']:
+            print("Joka tarkoittaa:", currentlause.verbi_englanniksi)
+        if config.jsonconfigdata['show_hint']:
+            if currentlause.hint is not None:
+                print("Vihje          :", currentlause.hint)
 
 
 
@@ -172,6 +177,9 @@ def playround(lauset, max, conn, cur):
         sqlstring = "INSERT OR IGNORE INTO Historia (lause_id, category_id, verbi_id, datetime, gotcorrect, wrongtext, json) VALUES (?, ?, ?, ?, ?, ?, ?)"
         cur.execute(sqlstring, (currentlause.dbid, currentlause.unitdbid, currentlause.verbi_dbid, currentlause.lastplayed, currentlause.correctlastplay, wrongtext, currentlause.jsondata))
         conn.commit()
+
+        #Show correct sentence here:
+
     return lauset, numcorrect, numwrong
 
 def startgame(conn, cur):

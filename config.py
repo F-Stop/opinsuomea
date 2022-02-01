@@ -6,6 +6,9 @@ import os
 #   To pull config variable value, use config.jsonconfigdata['key']
 #   To chagne config variable, call config.setconfigvariable(key, value)
 
+# ********** Version number *************
+version = "0.1"
+
 # ********** Configuration file ************
 #Written in JSON.  {"key" : "value"}
 configfilename = 'opinsuomea_config.json'

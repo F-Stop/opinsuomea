@@ -3,6 +3,7 @@ import opinsuomea_utils as osu
 import file_importer as osfile
 import gameplay as gp
 import db_creator
+import pprint
 import random
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
 
@@ -17,6 +18,7 @@ def print_hi(name):
     print("Welcome to Opin Suomea - an app to help learn Finnish grammar.")
     print("Created by Marc Perkins")
     print("Currently this is a super-duper-mega-ultra Alpha")
+    print("Version: ", config.version)
 
 def print_notes():
     return
@@ -32,12 +34,51 @@ def wipe_and_reload_db_from_file():
 
 def optionsmenu():
     while True:
-        print("""\nOPTIONS MENU
-    x - Placeholder
-    blank line - return to main""")
-        choice1 = input("Type the letter of your option: ")
-        if choice1.lower() == "x":
-            print("Probably have stuff on importing and exporting here.")
+        print("\n\nOPTIONS MENU\n")
+        print("             Configuration Variable                           Current Value")
+        print("    1 - change default session length                           ", config.jsonconfigdata['default_session_length'])
+        print("    2 - change setting of 'show hint'                           ", config.jsonconfigdata['show_hint'])
+        print("    3 - change setting of 'show verb in Finnish'                ", config.jsonconfigdata['show_verbi'])
+        print("    4 - change setting of 'show verb's English translation'     ", config.jsonconfigdata['show_verbi_eng'])
+        print("    5 - change setting of 'case matters when checking answers'  ", config.jsonconfigdata['check_case'])
+        print("")
+        print("    blank line or enter - return to main menu")
+        print("Note: Some sets may be built to require showing of hints or verb in Finnish. YMMV.")
+        choice1 = input("Type the letter of your selection: ")
+        if choice1.lower() == "1":
+            while True:
+                numqs = input("How many questions would you like to do in each session?")
+                try:
+                    numqsint = int(numqs)
+                except:
+                    print("Please enter a valid integer greater than 0.")
+                    continue
+                if numqsint < 1:
+                    print("Please enter a valid integer greater than 0.")
+                    continue
+                break
+            config.jsonconfigdata['default_session_length'] = numqsint
+            print("Okay - we changed the default session length to:", config.jsonconfigdata['default_session_length'])
+        elif choice1.lower() == "2":
+            if config.jsonconfigdata['show_hint'] == True: config.jsonconfigdata['show_hint'] = False
+            elif config.jsonconfigdata['show_hint'] == False: config.jsonconfigdata['show_hint'] = True
+            print("Got it, boss!")
+            continue
+        elif choice1.lower() == "3":
+            if config.jsonconfigdata['show_verbi'] == True: config.jsonconfigdata['show_verbi'] = False
+            elif config.jsonconfigdata['show_verbi'] == False: config.jsonconfigdata['show_verbi'] = True
+            print("Got it, boss!")
+            continue
+        elif choice1.lower() == "4":
+            if config.jsonconfigdata['show_verbi_eng'] == True: config.jsonconfigdata['show_verbi_eng'] = False
+            elif config.jsonconfigdata['show_verbi_eng'] == False: config.jsonconfigdata['show_verbi_eng'] = True
+            print("Got it, boss!")
+            continue
+        elif choice1.lower() == "5":
+            if config.jsonconfigdata['check_case'] == True: config.jsonconfigdata['check_case'] = False
+            elif config.jsonconfigdata['check_case'] == False: config.jsonconfigdata['check_case'] = True
+            print("Got it, boss!")
+            continue
         elif choice1.lower() == "":
             print("Back to main menu!")
             return()
@@ -60,13 +101,24 @@ def mainmenu(conn, cur):
         if choice1 == "1":
             gp.startgame(conn, cur)
         elif choice1.lower() == "v":
-            print("List of verbs")
+            print("\nHere are all the verbs in our database:")
+            verbitlist = osu.pullverbs(conn, cur)
+            print("")
+            print("Infinitive  -  Englanniksi")
+            for verbi in verbitlist:
+                if verbi.infinitive == "-": continue
+                print(verbi.infinitive, "  -  ", verbi.englanniksi)
+
             #for verb in verbs:
             #    print(verb, "---", verbs[verb].englanniksi)
         elif choice1.lower() == "s":
-            print("List of sentences")
-            #for lause in lauset:
-            #    print(lause.lause, "---", lause.verbi_inf, "---", lause.verbi_vastaus, "---", lause.lause_englanniksi)
+            print("\nHere are all the sentences")
+            lauselist = osu.getlauselist(conn, cur, "not used", True)
+            print("")
+            print(" ID   - Sentence           -  Answer")
+            for lause in lauselist:
+                print(lause.humanid, " - ", lause.lause, " - ", lause.vastaus)
+
         elif choice1.lower() == "o":
             optionsmenu()
         elif choice1.lower() == "d":

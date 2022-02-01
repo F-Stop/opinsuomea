@@ -160,6 +160,28 @@ def populate_dbs(verblist, unitlist, lauselist, errorlist, conn, cur):
 
     return verblist, unitlist, lauselist, errorlist
 
+
+    dbid = None
+    infinitive = "" # infinitive form
+    englanniksi = "" # English definition
+    typpi = "" # verb type
+    jsondata = None  #JSON data, stored as DB-friendly JSON data, to allow flexible info on verbs to be stored
+
+
+def pullverbs(conn, cur):
+    cur.execute('''SELECT id, infinitive, englanti, type, json FROM Verbi''')
+    result = cur.fetchall()
+    verbitlist = []
+    for item in result:
+        currentverb = verbi()
+        currentverb.dbid = item[0]
+        currentverb.infinitive = item[1]
+        currentverb.englanniksi = item[2]
+        currentverb.typpi = item[3]
+        currentverb.jsondata = item[4]
+        verbitlist.append(currentverb)
+    return verbitlist
+
 def pullunits(conn, cur):
     cur.execute('''SELECT id, humanid, name, description, updatedate, otherinfo, json FROM Kategoria''')
     result = cur.fetchall()
@@ -185,12 +207,12 @@ def getlauselist(conn, cur, unitdbid, allunits = False, dbwhereclause = ""):
     if allunits:
         dbunitclause = ""
     else:
-        dbunitclause = "AND Lause.kategoria_id = {} ".format(unitdbid)
+        dbunitclause = "AND Lause.kategoria_id = {} ".format(unitdbid)  # This may be a security risk if this is ever published online.
 
     sqlstring = """SELECT Verbi.infinitive, Verbi.englanti, Verbi.id, Kategoria.humanid, Kategoria.name, Lause.id, Lause.humanid, Lause.kategoria_id, Lause.lause, Lause.lause_eng, Lause.vastaus, Lause.kirjakieli, Lause.puhekieli, Lause.points, Lause.correctlastplay, Lause.timesplayed, Lause.timescorrect, Lause.timeswrong, Lause.lastplayed, Lause.errorflag, Lause.json, Lause.type, Lause.hint 
     FROM Verbi, Lause, Kategoria
     WHERE  Lause.verbi_id = Verbi.id AND Lause.kategoria_id = Kategoria.id {} {}
-    ORDER BY Lause.points
+    ORDER BY Kategoria.humanid, Lause.humanid
     """.format(dbunitclause, dbwhereclause)
 
     cur.execute(sqlstring)
