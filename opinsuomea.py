@@ -39,7 +39,7 @@ def update_db_from_file():
     wb, verbsheet, unitsheets = osfile.openfile()
     verblist, unitlist, lauselist, errorlist = osfile.parsefile(wb, verbsheet, unitsheets)
     conn, cur = osu.connectdb()
-    verblist, unitlist, lauselist, errorlist = osu.nondestructive_populate_dbs(verblist, unitlist, lauselist, errorlist, conn, cur)
+    verblist, unitlist, lauselist, errorlist = osu.populate_dbs(verblist, unitlist, lauselist, errorlist, conn, cur)
     print("\nVerbs, Units, and Sentences were updated using the Excel file; your history data should still be intact.")
 
 
