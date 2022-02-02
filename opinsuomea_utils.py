@@ -91,6 +91,10 @@ def populate_dbs(verblist, unitlist, lauselist, errorlist, conn, cur):
     #Assuming that we are populating from scratch or just adding in new ones
     #NOT updating existing sentences.  Consider adding that in future.
 
+    #This function serves two purposes:
+    #    1) If the DB has been created fresh before this, it will insert everything new.
+    #    2) If it is working on an existing DB, it just updates everything (assuming bits may be changed), but should not change the stats (to leave those intact)
+
     #Verb work first
     print("Inserting verbs")
 
@@ -103,8 +107,10 @@ def populate_dbs(verblist, unitlist, lauselist, errorlist, conn, cur):
         cur.execute('''SELECT id FROM Verbi WHERE (infinitive) = ( ? )''', (verb,))
         result = cur.fetchone()
         if result:
-            # print("Verb already exists")
+            print(verb, "already exists in the database.  Updating.")
             verb_id = result[0]
+            cur.execute('''UPDATE OR IGNORE Verbi SET infinitive = ?, englanti = ?, type = ? WHERE id = ?''', (verb,verblist[verb].englanniksi,verblist[verb].typpi, verb_id))
+            conn.commit()
         else:
             print(verb, "is a new verb.  Inserting.")
             cur.execute('''INSERT OR IGNORE INTO Verbi (infinitive, englanti, type) VALUES (?, ?, ?)''', (verb,verblist[verb].englanniksi,verblist[verb].typpi))
@@ -112,7 +118,7 @@ def populate_dbs(verblist, unitlist, lauselist, errorlist, conn, cur):
             cur.execute('''SELECT id FROM Verbi WHERE (infinitive) = ( ? )''', (verb,))
             verb_id = cur.fetchone()[0]
         verblist[verb].dbid = verb_id
-        print("Verb dbID is:", verb_id)
+        #print("Verb dbID is:", verb_id)
 
     #insert categories / units
     for unit in unitlist:
@@ -120,16 +126,18 @@ def populate_dbs(verblist, unitlist, lauselist, errorlist, conn, cur):
         cur.execute('''SELECT id FROM Kategoria WHERE (humanid) = ( ? )''', (unit.humanid,))
         result = cur.fetchone()
         if result:
-            print("Unit already exists")
+            print(unit.humanid, unit.name, "already exists.  Updating.")
             unit_id = result[0]
+            cur.execute('''UPDATE OR IGNORE INTO Kategoria humanid = ?, name = ?, description = ?, updatedate = ?, otherinfo = ? WHERE id = ?''', (unit.humanid, unit.name, unit.description, unit.update_date, unit.other_info, unit_id))
+            conn.commit()
         else:
             print(unit.humanid, unit.name, "is a new unit. Inserting.")
-            cur.execute('''INSERT OR IGNORE INTO Kategoria (humanid, name, description, updatedate, otherinfo) VALUES (?, ?, ?, ?, ?)''', (unit.humanid, unit.name, unit.description, unit.update_date, unit.other_info))
+            cur.execute('''INSERT OR IGNORE Kategoria humanid, name, description, updatedate, otherinfo) VALUES (?, ?, ?, ?, ?)''', (unit.humanid, unit.name, unit.description, unit.update_date, unit.other_info))
             conn.commit()
             cur.execute('''SELECT id FROM Kategoria WHERE (humanid) = ( ? )''', (unit.humanid,))
             unit_id = cur.fetchone()[0]
         unit.dbid = unit_id
-        print("Unit dbID is:", unit_id)
+        #print("Unit dbID is:", unit_id)
 
     #insert lauset
     for lause in lauselist:
@@ -144,8 +152,10 @@ def populate_dbs(verblist, unitlist, lauselist, errorlist, conn, cur):
         cur.execute('''SELECT id FROM Lause WHERE (humanid) = ( ? )''', (lause.humanid,))
         result = cur.fetchone()
         if result:
-            print("Luase already exists")
+            print(lause.humanid, "already exists.  Updating.")
             lause_dbid = result[0]
+            cur.execute('''UPDATE OR IGNORE Lause humanid = ?, kategoria_id = ?, verbi_id = ?, lause = ?, lause_eng = ?, vastaus = ?, kirjakieli = ?, puhekieli = ?, type = ?, hint = ? WHERE id = ?''', (lause.humanid, unit_dbid, verb_dbid, lause.lause, lause.lause_englanniksi, lause.vastaus, lause.kirjakieli, lause.puhekieli, lause.type, lause.hint, verb_id))
+            conn.commit()
         else:
             print(lause.humanid, "is a new lause.  Inserting.")
             cur.execute('''INSERT OR IGNORE INTO Lause (humanid, kategoria_id, verbi_id, lause, lause_eng, vastaus, kirjakieli, puhekieli, type, hint) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', (lause.humanid, unit_dbid, verb_dbid, lause.lause, lause.lause_englanniksi, lause.vastaus, lause.kirjakieli, lause.puhekieli, lause.type, lause.hint))
@@ -153,19 +163,22 @@ def populate_dbs(verblist, unitlist, lauselist, errorlist, conn, cur):
             cur.execute('''SELECT id FROM Lause WHERE (humanid) = ( ? )''', (lause.humanid,))
             lause_dbid = cur.fetchone()[0]
         lause.dbid = lause_dbid
-        print("Lause ID is:", lause.dbid)
+        #print("Lause ID is:", lause.dbid)
 
     conn.commit()
-    print("Completed database import.")
+    print("Completed database import/update.")
 
     return verblist, unitlist, lauselist, errorlist
 
+def nondestructive_populate_dbs(verblist, unitlist, lauselist, errorlist, conn, cur):
+    #This function checks if things in the database and only adds / updates things that have changed
+    print("Not Functional Yet")
 
-    dbid = None
-    infinitive = "" # infinitive form
-    englanniksi = "" # English definition
-    typpi = "" # verb type
-    jsondata = None  #JSON data, stored as DB-friendly JSON data, to allow flexible info on verbs to be stored
+    # Actually, we don't need this - the populate DB function will be all we need.
+    #   If we run populate DB after refreshing DB, it just inserts new
+    #   But if we don't do that, we will find existing bits and can update them.
+
+
 
 
 def pullverbs(conn, cur):

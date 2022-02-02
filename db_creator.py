@@ -28,7 +28,8 @@ def dbselector():
     return dbfilename
 
 
-def createnewdb(dbfilename):
+def createnewdb(dbfilename, calledfromothermodule = False):
+    #Returns True if dbs were updated, False if dbs were not udpated.
     if dbfilename == "USEDEFAULTDB":
         if config.jsonconfigdata["Use_test_database"]:
             dbfilename = config.jsonconfigdata["test_database"]
@@ -44,8 +45,12 @@ def createnewdb(dbfilename):
         if choice.lower() == "y" or choice.lower() == "yes":
             print("Okay, we'll reset the database for ya, boss.")
         else:
-            print("Okay, quitting.")
-            exit()
+            if calledfromothermodule:
+                print("Okay, going back to main menu without updating database.")
+                return(False) #indicating the dbs were not wiped-
+            else:
+                print("Okay, quitting.")
+                exit()
     else:
         print("No existing file found - we'll create a new DB file for ya, boss.")
 
@@ -132,6 +137,8 @@ def createnewdb(dbfilename):
     conn.close()
 
     print("Tables formed all fresh and new for you in {}.  Have a nice day!".format(dbfile))
+
+    return(True) # True means we did wipe the DB.
 
 # Main portion
 if __name__ == '__main__':
