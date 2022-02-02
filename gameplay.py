@@ -196,7 +196,7 @@ def startgame(conn, cur):
     print("# - Unit name - Unit Description")
     count = 1
     for unit in unitlist:
-        print(count, "-", unit.humanid, "",unit.name, "-", unit.description)
+        print(count, "-", unit.name, "-", unit.description)
         count += 1
     while True:
         unitchoicetext = input("\nWhat unit would you like to play today? (# or enter to do ALL the units) ")
