@@ -1,4 +1,5 @@
 import config
+import time
 import opinsuomea_utils as osu
 import file_importer as osfile
 import gameplay as gp
@@ -62,6 +63,7 @@ def optionsmenu():
         print("    s - Save updated preferences to file (for use in future sessions)")
         print("    v - Print list of verbs")
         print("    l - Print list of sentences")
+        print("    e - Print list of sentences that have error reports")
         print("    u - Update database with refreshed sentence/unit/verb data from Excel file (leaves history data intact)")
         print("    d - Wipe database and reload verbs, units, and sentences from the Excel file (deletes all history data)")
         choice1 = input("Type the letter of your selection (or enter to return to main menu): ")
@@ -99,10 +101,10 @@ def optionsmenu():
             elif config.jsonconfigdata['check_case'] == False: config.jsonconfigdata['check_case'] = True
             print("Got it, boss!")
             continue
-        elif choice1.lower() == "s":
+        elif choice1.lower() == "s": #save preferences to file.
             config.saveupdatedconfigtofile()
             continue
-        elif choice1.lower() == "v":
+        elif choice1.lower() == "v": #list all verbs.
             print("\nHere are all the verbs in our database:")
             verbitlist = osu.pullverbs(conn, cur)
             print("")
@@ -113,16 +115,38 @@ def optionsmenu():
 
             # for verb in verbs:
             #    print(verb, "---", verbs[verb].englanniksi)
-        elif choice1.lower() == "l":
+        elif choice1.lower() == "l": #list all sentences.  Currently very ugly formatting and sorting.
             print("\nHere are all the sentences")
             lauselist = osu.getlauselist(conn, cur, "not used", True)
             print("")
             print(" ID   - Sentence           -  Answer")
             for lause in lauselist:
                 print(lause.humanid, " - ", lause.lause, " - ", lause.vastaus)
-        elif choice1.lower() == "u":
+        elif choice1.lower() == "e": #Show, and offer option to clear, error reports.
+            lauselist = osu.getlauselist(conn, cur, "not used", True, "AND errorflag = true")
+            if len(lauselist) == 0:
+                print("\nNo errors found in the database.  Yippee!")
+                time.sleep(0.5)
+            else:
+                print("\nHere are all the sentences with error reports")
+                print("")
+                print(" ID   - Sentence    -  Answer    -   Comments")
+                for lause in lauselist:
+                    print(lause.humanid, " - ", lause.lause, " - ", lause.vastaus, " - ", lause.lause_comments)
+                print("\nSend this list of sentences to your friendly neighborhood developer to fix them")
+                print("Or edit them in the spreadsheet (found in the 'data' folder) and then re-import the sentences")
+                clearchoice = input("\nDo you want to delete these reports from the database? (i.e., you or someone else fixed them) - y/n")
+                if clearchoice.lower() == "y":
+                    for lause in lauselist:
+                        sqlstring = "UPDATE Lause SET errorflag = false, errortext = null WHERE id = ?"
+                        cur.execute(sqlstring, (lause.dbid,))
+                        conn.commit()
+                    print("OK - all error reports have been cleared from the database.")
+                else:
+                    print("Leaving error reports intact, boss.  Note that error reports are not cleared when importing - they must be manually cleared via this menu option.")
+        elif choice1.lower() == "u": #Update database nondestructively from Excel file, leaving gameplay data intact.
             update_db_from_file()
-        elif choice1.lower() == "d":
+        elif choice1.lower() == "d": #Update database destructively, wiping database clean before re-importing from Excel file.
             wipe_and_reload_db_from_file()
         elif choice1.lower() == "":
             print("Back to main menu!")
