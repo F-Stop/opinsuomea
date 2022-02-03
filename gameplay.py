@@ -101,7 +101,6 @@ def playround(lauset, max, conn, cur):
         print("")
         print("")
         print("")
-        print("")
         print("Englanniksi:    ", currentlause.lause_englanniksi)
         print("Lause on:       ", currentlause.lause)
         print("")
@@ -122,7 +121,7 @@ def playround(lauset, max, conn, cur):
         #check answer and act accordingly
         iscorrect = checkanswer(answer, currentlause.vastaus)
         if iscorrect:
-            print("Woohoo!  You are correct!")
+            print("Woohoo!  You are correct:", osu.assemblesentence(currentlause.lause, currentlause.vastaus) )
             numcorrect += 1
             gotitright = True
             time.sleep(0.5)
@@ -130,8 +129,8 @@ def playround(lauset, max, conn, cur):
             print("Oh no!  Not quite right.")
             numwrong += 1
             gotitright = False
-            print("Your entry:  ", answer)
             print("Correct ans: ", currentlause.vastaus)
+            print("Your entry:  ", answer)
             while True: #ask them to type it correctly, or enter to skip
                 answer2 = input("\nType it correctly (enter to skip):")
                 iscorrect2 = checkanswer(answer2, currentlause.vastaus)

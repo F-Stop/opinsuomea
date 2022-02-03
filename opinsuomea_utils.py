@@ -4,6 +4,7 @@ import config
 import json
 import os
 import sqlite3
+import re
 from datetime import datetime
 
 class lause:
@@ -260,3 +261,10 @@ def printerrorlist(errorlist):
         print("\nHere are errors and warnings from the import:")
         for item in errorlist:
             print(item)
+
+
+def assemblesentence(lause, vastaus):
+    if re.search('###', lause) is None:  # check if there are three ###'s
+        return lause #just return the sentence as found in database if there are no ###'s
+    sentence = re.sub('(###)', vastaus, lause)
+    return sentence
