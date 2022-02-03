@@ -152,7 +152,7 @@ def playround(lauset, max, conn, cur):
                     print("Yeah, that was a tough one.  Let's move on.")
                     break
                 else:
-                    print("Your entry:  ", answer)
+                    print("Your entry:  ", answer2)
                     print("Correct ans: ", currentlause.vastaus)
 
         #Process end of setnence here - update DB, etc.
