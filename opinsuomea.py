@@ -49,9 +49,9 @@ def update_db_from_file():
 
 
 
-def optionsmenu():
+def preferencesmenu():
     while True:
-        print("\n\nOPTIONS MENU\n")
+        print("\n\nPREFERENCES MENU\n")
         print("Note: Some sets may be built to require showing of hints or verb in Finnish. YMMV.")
         print("             Configuration Variable                           Current Value")
         print("    1 - change default session length                           ", config.jsonconfigdata['default_session_length'])
@@ -59,13 +59,7 @@ def optionsmenu():
         print("    3 - change setting of 'show verb in Finnish'                ", config.jsonconfigdata['show_verbi'])
         print("    4 - change setting of 'show verb's English translation'     ", config.jsonconfigdata['show_verbi_eng'])
         print("    5 - change setting of 'case matters when checking answers'  ", config.jsonconfigdata['check_case'])
-        print("")
         print("    s - Save updated preferences to file (for use in future sessions)")
-        print("    v - Print list of verbs")
-        print("    l - Print list of sentences")
-        print("    e - Print list of sentences that have error reports")
-        print("    u - Update database with refreshed sentence/unit/verb data from Excel file (leaves history data intact)")
-        print("    d - Wipe database and reload verbs, units, and sentences from the Excel file (deletes all history data)")
         choice1 = input("Type the letter of your selection (or enter to return to main menu): ")
         if choice1.lower() == "1":
             while True:
@@ -103,8 +97,25 @@ def optionsmenu():
             continue
         elif choice1.lower() == "s": #save preferences to file.
             config.saveupdatedconfigtofile()
+            time.sleep(0.5)
             continue
-        elif choice1.lower() == "v": #list all verbs.
+        elif choice1.lower() == "":
+            print("Back to main menu!")
+            return()
+        else:
+            print("Hmm, I didn't quite understand that.  Please try again.")
+
+def databasemenu():
+    while True:
+        print("\n\nDATABASE TOOLS MENU\n")
+        print("    v - Print list of verbs")
+        print("    l - Print list of sentences")
+        print("    e - Print list of sentences that have error reports")
+        print("    u - Update database with refreshed sentence/unit/verb data from Excel file (leaves history data intact)")
+        print("    d - Wipe database and reload verbs, units, and sentences from the Excel file (deletes all history data)")
+        choice1 = input("Type the letter of your selection (or enter to return to main menu): ")
+
+        if choice1.lower() == "v": #list all verbs.
             print("\nHere are all the verbs in our database:")
             verbitlist = osu.pullverbs(conn, cur)
             print("")
@@ -157,7 +168,8 @@ def optionsmenu():
 def displaymainmenu():
     print("""\nMAIN MENU
     1 - Play game
-    o - See options
+    p - Preferences and display options
+    d - Database tools
     q/Q - Quit""")
 
 def mainmenu(conn, cur):
@@ -166,8 +178,10 @@ def mainmenu(conn, cur):
         choice1 = input("Type the letter of your choice: ")
         if choice1 == "1":
             gp.startgame(conn, cur)
-        elif choice1.lower() == "o":
-            optionsmenu()
+        elif choice1.lower() == "p":
+            preferencesmenu()
+        elif choice1.lower() == "d":
+            databasemenu()
         elif choice1.lower() == "q":
             print("Thanks for using the app!  Have any questions?  Contact Marc Perkins at mperkins@student.jyu.fi.")
             exit()
