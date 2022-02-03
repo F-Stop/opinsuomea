@@ -47,3 +47,19 @@ def setconfigvariable(key, value):
     print(key, "was set at", jsonconfigdata[key])
     jsonconfigdata[key] = value
     print(key, "is now set at", jsonconfigdata[key])
+
+
+def saveupdatedconfigtofile():
+    try:
+        f = open(configfile, 'w')
+    except:
+        print("Could open preferences file {} to write to it.  Updated preferences were not saved.".format(configfile))
+        return
+    try:
+        f.write(json.dumps(jsonconfigdata, indent=4))
+        f.close()
+        print("\nPreferences file {} successfully saved.".format(configfile))
+    except:
+        print("Could open save preferences to file {}.  Updated preferences were not saved.".format(configfile))
+        return
+    return

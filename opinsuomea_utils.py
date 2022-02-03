@@ -214,7 +214,7 @@ def getlauselist(conn, cur, unitdbid, allunits = False, dbwhereclause = ""):
     else:
         dbunitclause = "AND Lause.kategoria_id = {} ".format(unitdbid)  # This may be a security risk if this is ever published online.
 
-    sqlstring = """SELECT Verbi.infinitive, Verbi.englanti, Verbi.id, Kategoria.humanid, Kategoria.name, Lause.id, Lause.humanid, Lause.kategoria_id, Lause.lause, Lause.lause_eng, Lause.vastaus, Lause.kirjakieli, Lause.puhekieli, Lause.points, Lause.correctlastplay, Lause.timesplayed, Lause.timescorrect, Lause.timeswrong, Lause.lastplayed, Lause.errorflag, Lause.json, Lause.type, Lause.hint 
+    sqlstring = """SELECT Verbi.infinitive, Verbi.englanti, Verbi.id, Kategoria.humanid, Kategoria.name, Lause.id, Lause.humanid, Lause.kategoria_id, Lause.lause, Lause.lause_eng, Lause.vastaus, Lause.kirjakieli, Lause.puhekieli, Lause.points, Lause.correctlastplay, Lause.timesplayed, Lause.timescorrect, Lause.timeswrong, Lause.lastplayed, Lause.errorflag, Lause.json, Lause.type, Lause.hint, Lause.errortext 
     FROM Verbi, Lause, Kategoria
     WHERE  Lause.verbi_id = Verbi.id AND Lause.kategoria_id = Kategoria.id {} {}
     ORDER BY Kategoria.humanid, Lause.humanid
@@ -250,11 +250,13 @@ def getlauselist(conn, cur, unitdbid, allunits = False, dbwhereclause = ""):
         tamalause.jsondata =  result[20]
         tamalause.type = result[21]
         tamalause.hint = result[22]
+        if result[23] is not None:
+            tamalause.lause_comments = json.loads(result[23])
         lauselist.append(tamalause)
 
     return lauselist
 
-def printerrorlist(errorlist):
+def printimporterrorlist(errorlist):
     if len(errorlist) == 0:
         print("\nNo errors in the import - Yay!")
     else:
@@ -268,3 +270,11 @@ def assemblesentence(lause, vastaus):
         return lause #just return the sentence as found in database if there are no ###'s
     sentence = re.sub('(###)', vastaus, lause)
     return sentence
+
+def reporterror(lause, conn, cur):
+    sqlstring = "UPDATE Lause SET errorflag = ?, errortext = ? WHERE id = ?"
+    cur.execute(sqlstring, (lause.lause_reported, json.dumps(lause.lause_comments), lause.dbid))
+    conn.commit()
+    print("Error report saved.  Thank you for reporting this, and we apologize for the trouble!")
+    print("\nNote: error reports are not automatically emailed to anyone - they are just saved in your local database file.")
+    print("You will need to manually make changes yourself, or email the db file to someone, to actually fix the issue.")

@@ -30,7 +30,7 @@ def wipe_and_reload_db_from_file():
     if wasdbwiped:
         conn, cur = osu.connectdb()
         verblist, unitlist, lauselist, errorlist = osu.populate_dbs(verblist, unitlist, lauselist, errorlist, conn, cur)
-        osu.printerrorlist(errorlist)
+        osu.printimporterrorlist(errorlist)
         print("\nAlright, you've got a nice fresh set of databases with new data loaded from the Excel file to use!")
     else:
         #DB wiping was aborted by the user, so skip updating setences.
@@ -43,7 +43,7 @@ def update_db_from_file():
     verblist, unitlist, lauselist, errorlist = osfile.parsefile(wb, verbsheet, unitsheets)
     conn, cur = osu.connectdb()
     verblist, unitlist, lauselist, errorlist = osu.populate_dbs(verblist, unitlist, lauselist, errorlist, conn, cur)
-    osu.printerrorlist(errorlist)
+    osu.printimporterrorlist(errorlist)
     print("\nVerbs, Units, and Sentences were updated using the Excel file; your history data should still be intact.")
 
 
@@ -59,14 +59,15 @@ def optionsmenu():
         print("    4 - change setting of 'show verb's English translation'     ", config.jsonconfigdata['show_verbi_eng'])
         print("    5 - change setting of 'case matters when checking answers'  ", config.jsonconfigdata['check_case'])
         print("")
+        print("    s - Save updated preferences to file (for use in future sessions)")
         print("    v - Print list of verbs")
-        print("    s - Print list of sentences")
+        print("    l - Print list of sentences")
         print("    u - Update database with refreshed sentence/unit/verb data from Excel file (leaves history data intact)")
         print("    d - Wipe database and reload verbs, units, and sentences from the Excel file (deletes all history data)")
         choice1 = input("Type the letter of your selection (or enter to return to main menu): ")
         if choice1.lower() == "1":
             while True:
-                numqs = input("How many questions would you like to do in each session?")
+                numqs = input("How many questions would you like to do in each session? ")
                 try:
                     numqsint = int(numqs)
                 except:
@@ -98,6 +99,9 @@ def optionsmenu():
             elif config.jsonconfigdata['check_case'] == False: config.jsonconfigdata['check_case'] = True
             print("Got it, boss!")
             continue
+        elif choice1.lower() == "s":
+            config.saveupdatedconfigtofile()
+            continue
         elif choice1.lower() == "v":
             print("\nHere are all the verbs in our database:")
             verbitlist = osu.pullverbs(conn, cur)
@@ -109,7 +113,7 @@ def optionsmenu():
 
             # for verb in verbs:
             #    print(verb, "---", verbs[verb].englanniksi)
-        elif choice1.lower() == "s":
+        elif choice1.lower() == "l":
             print("\nHere are all the sentences")
             lauselist = osu.getlauselist(conn, cur, "not used", True)
             print("")
@@ -135,13 +139,13 @@ def displaymainmenu():
 def mainmenu(conn, cur):
     while True:
         displaymainmenu()
-        choice1 = input("Type the letter of your option: ")
+        choice1 = input("Type the letter of your choice: ")
         if choice1 == "1":
             gp.startgame(conn, cur)
         elif choice1.lower() == "o":
             optionsmenu()
         elif choice1.lower() == "q":
-            print("Thanks for using the app!")
+            print("Thanks for using the app!  Have any questions?  Contact Marc Perkins at mperkins@student.jyu.fi.")
             exit()
         else:
             print("Hmm, I didn't quite understand that.  Please try again.")

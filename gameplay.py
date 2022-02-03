@@ -132,7 +132,18 @@ def playround(lauset, max, conn, cur):
             print("Correct ans: ", currentlause.vastaus)
             print("Your entry:  ", answer)
             while True: #ask them to type it correctly, or enter to skip
-                answer2 = input("\nType it correctly (enter to skip):")
+                answer2 = input("\nType it correctly (enter to skip or 'error' to report an error): ")
+                if answer2.lower() == "error":
+                    print("\nOh no! Sorry about something being wrong.  Let's flag this question as having an error in the database.")
+                    errortext = input("Please briefly summarize what is wrong with this sentence (enter to skip error report):")
+                    if errortext == "":
+                        print("Okay, not filing an error report.  Continuing!")
+                        break
+                    else:
+                        currentlause.lause_reported = True
+                        currentlause.lause_comments.append(errortext)
+                        osu.reporterror(currentlause, conn, cur)
+                        break
                 iscorrect2 = checkanswer(answer2, currentlause.vastaus)
                 if iscorrect2:
                     print("Great job!")
@@ -228,7 +239,7 @@ def startgame(conn, cur):
         print("Number correct: ", numcorrect)
         print("Number wrong: ", numwrong)
         while True:
-            again = input("\nWant to play again? (y/n)")
+            again = input("\nWant to play again? (y/n) ")
             if again.lower() == "y":
                 break
             elif again.lower() == "n":

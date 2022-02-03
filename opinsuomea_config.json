@@ -1,19 +1,22 @@
 {
-  "info" : "Configuration file for OpinSuomea",
-  "default_session_length" : 2,
-  "check_case" : false,
-  "show_hint" : true,
-  "show_verbi" : true,
-  "show_verbi_eng" : true,
-  "kirjakieli" : true,
-  "puhekieli" : true,
-  "data_folder" : "data",
-  "test_database" : "test_opinsuomea_db",
-  "prod_database" : "opinsuomea_db",
-  "Use_test_database" : true,
-  "moreinfo" : [
-    {"GitHub page" : "https://github.com/F-Stop/opinsuomea"},
-    {"Developed by" :  "Marc Perkins"}
-  ]
-
+    "info": "Configuration file for OpinSuomea",
+    "default_session_length": 4,
+    "check_case": false,
+    "show_hint": true,
+    "show_verbi": true,
+    "show_verbi_eng": true,
+    "kirjakieli": true,
+    "puhekieli": true,
+    "data_folder": "data",
+    "test_database": "test_opinsuomea_db",
+    "prod_database": "opinsuomea_db",
+    "Use_test_database": true,
+    "moreinfo": [
+        {
+            "GitHub page": "https://github.com/F-Stop/opinsuomea"
+        },
+        {
+            "Developed by": "Marc Perkins"
+        }
+    ]
 }
