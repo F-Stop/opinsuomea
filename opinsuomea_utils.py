@@ -252,3 +252,11 @@ def getlauselist(conn, cur, unitdbid, allunits = False, dbwhereclause = ""):
         lauselist.append(tamalause)
 
     return lauselist
+
+def printerrorlist(errorlist):
+    if len(errorlist) == 0:
+        print("\nNo errors in the import - Yay!")
+    else:
+        print("\nHere are errors and warnings from the import:")
+        for item in errorlist:
+            print(item)

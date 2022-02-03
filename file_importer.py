@@ -1,5 +1,6 @@
 import os
 import time
+import re
 import opinsuomea_utils as osu
 from openpyxl import load_workbook
 import config
@@ -133,6 +134,10 @@ def parseunits(unitsheets, verbs):
 
             # Column 1 has human ID
             currentlause.humanid = row[0].value
+            if currentlause.humanid is None: #No Human-readable ID.  Will crash DB search on attmepting to add it to DB.  So abort.
+                print("ERROR: A sentence has no ID number in the spreadsheet - the import of this sentence is being aborted.  Sentence text is {}".format(row[6].value))
+                errorlist.append("ERROR: A sentence has no ID number in the spreadsheet - the import of this sentence is being aborted.  Sentence text is {}".format(row[6].value))
+                continue #Abort the sentence import
 
             #Column 2 has type of language flag
             if row[1].value.lower() == "kirjakieli":
@@ -151,18 +156,43 @@ def parseunits(unitsheets, verbs):
             elif row[2].value.lower() == "other":
                 currentlause.type = 3
             else:
-                print("WARNING: type of thing missing field not recognized for lause {}".format(row[0].value))
-                errorlist.append("WARNING: type of thing missing field not recognized for lause {}".format(row[0].value))
+                print("WARNING: 'type of thing missing' text was missing or not recognized for lause {}.  Setting it to 'other' to prevent crashes.  ".format(row[0].value))
+                errorlist.append("WARNING: 'type of thing missing' text was missing or not recognized for lause {}  Setting it to 'other' to prevent crashes.  ".format(row[0].value))
+                currentlause.type = 3
 
-            if currentlause.type == 1:
-                currentlause.verbi_inf = row[3].value
+            if currentlause.type == 1: # it is set to be a verb
+                if row[3].value is None: #There is no verb text for a sentence that has listed verb as a type.
+                    print("WARNING: Verb text is missing from a sentence that is listed as a verb type - lause {}.  Inserting a - as verb type to avoid crashes".format(row[0].value))
+                    errorlist.append("WARNING: Verb text is missing from a sentence that is listed as a verb type - lause {}. Inserting a - as verb type to avoid crashes".format(row[0].value))
+                    currentlause.verbi_inf = "-" #prevent crashes by putting in a -
+                else: currentlause.verbi_inf = row[3].value
             else:
                 currentlause.verbi_inf = "-"   #hard-coding in a dash here to prevent DB errors when coding searches with empty verb field.
 
             currentlause.hint = row[4].value
             currentlause.vastaus = row[5].value
+            if currentlause.vastaus is None:
+                print("WARNING: The answer field has been left blank for lause {}".format(row[0].value))
+                errorlist.append("WARNING: The answer field has been left blank for lause {}".format(row[0].value))
+
+
+            #Check if the sentence actually has three ### in it (which also checks if there is even a sentence there!).
             currentlause.lause = row[6].value
+            if currentlause.lause is None:
+                print("WARNING: there is no sentence text in lause {}".format(row[0].value))
+                errorlist.append("WARNING: there is no sentence text in lause {}".format(row[0].value))
+            elif re.search('###', currentlause.lause) is None: #check if there are three ###'s, which will be required for later functions.
+                print("WARNING: there is no answer position (###) in lause {}".format(row[0].value))
+                errorlist.append("WARNING: there is no answer position (###) in lause {}".format(row[0].value))
+            elif re.search('####+', currentlause.lause): #check if there are more than three ###'s - no crashes as a result, but uglier formatting.
+                print("WARNING: there are more than three #'s in the sentence text for lause {}".format(row[0].value))
+                errorlist.append("WARNING: there are more than three #'s in the sentence text for lause {}".format(row[0].value))
+
+
             currentlause.lause_englanniksi = row[7].value
+            if currentlause.lause_englanniksi is None:
+                print("WARNING: The English translation of the sentence has been left blank for lause {}".format(row[0].value))
+                errorlist.append("WARNING: The English translation of the sentence has been left blank for lause {}".format(row[0].value))
 
             # check and see if verb in the unit spreadsheet is in the verb dictionary
             try:
@@ -180,7 +210,7 @@ def parseunits(unitsheets, verbs):
     for unit in units:
         print(unit.name)
 
-    print("\nWe imported {} sentences.".format(len(lauset)))
+    print("\nWe imported {} sentences from the Excel file.".format(len(lauset)))
     #print ("Here are the setnences we imported")
     #for lause in lauset:
     #    print(lause.lause, lause.lause_englanniksi)
@@ -190,14 +220,9 @@ def parseunits(unitsheets, verbs):
 def parsefile(wb, verbsheet, unitsheets):
     verbs = parseverbs(verbsheet)
     units, lauset, errorlist = parseunits(unitsheets, verbs)
-
-    if len(errorlist) == 0:
-        print("No errors - Yay!")
-    else:
-        print("Here are errors and warnings from the import:")
-        for item in errorlist:
-            print(item)
     return verbs, units, lauset, errorlist
+
+
 
 
 if __name__ == "__main__":

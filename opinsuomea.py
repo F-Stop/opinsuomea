@@ -30,16 +30,20 @@ def wipe_and_reload_db_from_file():
     if wasdbwiped:
         conn, cur = osu.connectdb()
         verblist, unitlist, lauselist, errorlist = osu.populate_dbs(verblist, unitlist, lauselist, errorlist, conn, cur)
+        osu.printerrorlist(errorlist)
         print("\nAlright, you've got a nice fresh set of databases with new data loaded from the Excel file to use!")
     else:
         #DB wiping was aborted by the user, so skip updating setences.
         print("Databases were left intact - no changes made.")
+
+
 
 def update_db_from_file():
     wb, verbsheet, unitsheets = osfile.openfile()
     verblist, unitlist, lauselist, errorlist = osfile.parsefile(wb, verbsheet, unitsheets)
     conn, cur = osu.connectdb()
     verblist, unitlist, lauselist, errorlist = osu.populate_dbs(verblist, unitlist, lauselist, errorlist, conn, cur)
+    osu.printerrorlist(errorlist)
     print("\nVerbs, Units, and Sentences were updated using the Excel file; your history data should still be intact.")
 
 
