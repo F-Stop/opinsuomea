@@ -51,7 +51,7 @@ def update_db_from_file():
 
 def preferencesmenu():
     while True:
-        print("\n\nPREFERENCES MENU\n")
+        print("\n\n                   PREFERENCES MENU\n")
         print("Note: Some sets may be built to require showing of hints or verb in Finnish. YMMV.")
         print("             Configuration Variable                           Current Value")
         print("    1 - change default session length                           ", config.jsonconfigdata['default_session_length'])
@@ -60,7 +60,7 @@ def preferencesmenu():
         print("    4 - change setting of 'show verb's English translation'     ", config.jsonconfigdata['show_verbi_eng'])
         print("    5 - change setting of 'case matters when checking answers'  ", config.jsonconfigdata['check_case'])
         print("    s - Save updated preferences to file (for use in future sessions)")
-        choice1 = input("Type the letter of your selection (or enter to return to main menu): ")
+        choice1 = input("\nType the letter of your selection (or enter to return to main menu): ")
         if choice1.lower() == "1":
             while True:
                 numqs = input("How many questions would you like to do in each session? ")
@@ -107,13 +107,13 @@ def preferencesmenu():
 
 def databasemenu():
     while True:
-        print("\n\nDATABASE TOOLS MENU\n")
+        print("\n\n        DATABASE TOOLS MENU\n")
         print("    v - Print list of verbs")
         print("    l - Print list of sentences")
         print("    e - Print list of sentences that have error reports")
         print("    u - Update database with refreshed sentence/unit/verb data from Excel file (leaves history data intact)")
-        print("    d - Wipe database and reload verbs, units, and sentences from the Excel file (deletes all history data)")
-        choice1 = input("Type the letter of your selection (or enter to return to main menu): ")
+        print("    d - Wipe database and reload verbs, units, and sentences from the Excel file (deletes all history data and creates a brand new database file)")
+        choice1 = input("\nType the letter of your selection (or enter to return to main menu): ")
 
         if choice1.lower() == "v": #list all verbs.
             print("\nHere are all the verbs in our database:")
@@ -166,7 +166,7 @@ def databasemenu():
             print("Hmm, I didn't quite understand that.  Please try again.")
 
 def displaymainmenu():
-    print("""\nMAIN MENU
+    print("""\n      MAIN MENU
     1 - Play game
     p - Preferences and display options
     d - Database tools

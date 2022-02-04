@@ -10,7 +10,7 @@ def selectnum(lauset):
     print("We have {} setnences in this set".format(len(lauset)))
     #Select how many to do
     while True:
-        numtodo = input("How many sentences do you want to do? (default: {})".format(config.jsonconfigdata['default_session_length']))
+        numtodo = input("How many sentences do you want to do? (default: {}) ".format(config.jsonconfigdata['default_session_length']))
         if numtodo == "":
             max = config.jsonconfigdata['default_session_length']
             print("Okay, we will do {} sentences.".format(max))
