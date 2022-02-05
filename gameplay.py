@@ -108,6 +108,7 @@ def playround(lauset, max, conn, cur):
     lausehistory = []
     gotitright = False #flag for if the user got the answer correct.  We'll be pessimistic.
     for number in range(max):
+        errorreported = False
         #print("run ", number)
         # Select a sentence
         lausetodo, lausehistory = pickalause(lauset, lausehistory)
@@ -159,6 +160,7 @@ def playround(lauset, max, conn, cur):
                         currentlause.lause_reported = True
                         currentlause.lause_comments.append(errortext)
                         osu.reporterror(currentlause, conn, cur)
+                        errorreported = True
                         break
                 iscorrect2 = checkanswer(answer2, currentlause.vastaus)
                 if iscorrect2:
@@ -183,7 +185,8 @@ def playround(lauset, max, conn, cur):
             currentlause.correctlastplay = True
         else:
             currentlause.timeswrong += 1
-            currentlause.points -= 1
+            if not errorreported:
+                currentlause.points -= 1
             currentlause.correctlastplay = False
             #Update currentlausevariable here.
             #Add to DB update code here
