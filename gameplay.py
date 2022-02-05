@@ -146,7 +146,7 @@ def playround(lauset, max, conn, cur):
             print("Oh no!  Not quite right.")
             numwrong += 1
             gotitright = False
-            print("Correct ans: ", currentlause.vastaus)
+            print("\nCorrect ans: ", currentlause.vastaus)
             print("Your entry:  ", answer)
             while True: #ask them to type it correctly, or enter to skip
                 answer2 = input("\nType it correctly (enter to skip or 'error' to report an error): ")
