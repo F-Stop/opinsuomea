@@ -10,7 +10,7 @@
     "data_folder": "data",
     "test_database": "test_opinsuomea_db",
     "prod_database": "opinsuomea_db",
-    "Use_test_database": false,
+    "Use_test_database": true,
     "license_file" : "LICENSE.txt",
     "moreinfo": [
         {
