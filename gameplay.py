@@ -23,7 +23,7 @@ import opinsuomea_utils as osu
 
 
 def selectnum(lauset):
-    print("We have {} setnences in this set".format(len(lauset)))
+    print("\nWe have {} sentences in this set".format(len(lauset)))
     #Select how many to do
     while True:
         numtodo = input("How many sentences do you want to do? (default: {}) ".format(config.jsonconfigdata['default_session_length']))
@@ -37,7 +37,7 @@ def selectnum(lauset):
                 print("Okay, doing {} sentences.".format(max))
                 break
             if max < 1:
-                print ("Please enter a positive number.")
+                print("Please enter a positive number.")
         except:
             print("You did not enter an integer.  Try again!")
     return max
