@@ -188,8 +188,9 @@ def parseunits(unitsheets, verbs):
             currentlause.hint = row[4].value
             currentlause.vastaus = row[5].value
             if currentlause.vastaus is None:
-                print("WARNING: The answer field has been left blank for lause {}".format(row[0].value))
-                errorlist.append("WARNING: The answer field has been left blank for lause {}".format(row[0].value))
+                currentlause.vastaus = '-'
+                print("WARNING: The answer field has been left blank for lause {}.  Setting it to be '-' to prevent crashes.".format(row[0].value))
+                errorlist.append("WARNING: The answer field has been left blank for lause {}.  Setting it to be '-' to prevent crashes.".format(row[0].value))
 
 
             #Check if the sentence actually has three ### in it (which also checks if there is even a sentence there!).
