@@ -42,7 +42,24 @@ Configuration file: opinsuomea_config.json
     "test_database": "test_opinsuomea_db", - name of the test database
     "prod_database": "opinsuomea_db", - name of the production database
     "Use_test_database": false - which database to use - false indicates that the production database should be used.
+    "license_file" : "LICENSE.txt" - name of license file
 
   Not implemented yet in gameplay:
   "kirjakieli" : true  - whether to include kirjakieli lauset in the question pool
   "puhekieli" : true   - whether to include puhekieli lauset in the question pool
+
+
+COPYRIGHT:
+
+Copyright 2022 by Marc Perkins.
+
+
+LICENSE:
+
+This file is part of Opin Suomea.
+
+Opin Suomea is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+Opin Suomea is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with Opin Suomea. If not, see <https://www.gnu.org/licenses/>.

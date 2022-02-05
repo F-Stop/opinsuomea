@@ -1,3 +1,17 @@
+#    Opin Suomea - a program to help people learn Finnish grammar
+#    Copyright (C) 2022 Marc Perkins
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#    Contact Marc at the email address specified in config.printcontactinfo()
+
 import json
 import os
 
@@ -63,3 +77,49 @@ def saveupdatedconfigtofile():
         print("Could open save preferences to file {}.  Updated preferences were not saved.".format(configfile))
         return
     return
+
+def printsummary():
+    print("Opin Suomea - a program to help users learn Finnish grammar")
+
+def printcopyright():
+    print("Opin Suomea Copyright Marc Perkins 2022")
+
+def printcontactinfo():
+    print("To contact Marc Perkins, e-mail him at mperkinsphoto@gmail.com")
+
+def printcopyrightandlicensestatement():
+    print("\n\n\n")
+    printsummary()
+    printcopyright()
+    printcontactinfo()
+
+    try:
+        appfolder = os.path.dirname(__file__)
+        licensefile = os.path.join(appfolder, jsonconfigdata['license_file'])
+        lf = open(licensefile, 'r')
+        #print("License file opened.")
+        for line in lf.readlines():
+            print(line, end =" ")
+        print("\n\n")
+        printcopyright()
+        printcontactinfo()
+    except:
+        print("\nLicense file is not openable, boss.  Something is wrong.  We'll print out basic license info here, but the license file should be at:", licensefile)
+        print("\nThis program is licensed under the GNU GPLv3 license.")
+        print("""    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.""")
+        print("\n\n")
+        printcopyright()
+        printcontactinfo()
+
+

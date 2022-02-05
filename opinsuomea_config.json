@@ -11,6 +11,7 @@
     "test_database": "test_opinsuomea_db",
     "prod_database": "opinsuomea_db",
     "Use_test_database": true,
+    "license_file" : "LICENSE.txt",
     "moreinfo": [
         {
             "GitHub page": "https://github.com/F-Stop/opinsuomea"

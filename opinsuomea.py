@@ -1,3 +1,17 @@
+#    Opin Suomea - a program to help people learn Finnish grammar
+#    Copyright (C) 2022 Marc Perkins
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#    Contact Marc at the email address specified in config.printcontactinfo()
+
 import config
 import time
 import opinsuomea_utils as osu
@@ -6,7 +20,10 @@ import gameplay as gp
 import db_creator
 import pprint
 import random
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+
+
+
+
 
 # Configuration setting, including config file name, are found in config.py
 #   To pull config variable value, use config.jsonconfigdata['key']
@@ -15,13 +32,24 @@ import random
 
 
 
-def print_hi(name):
+def print_hi():
+    config.printsummary()
+    config.printcopyright()
+    print("""\n         This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+         without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+         See the GNU General Public License for more details.
+         This is free software, and you are welcome to redistribute it
+         under certain conditions; type `c' for details.""")
+    print("")
     print("Welcome to Opin Suomea - an app to help learn Finnish grammar.")
     print("Created by Marc Perkins")
-    print("Currently this is a super-duper-mega-ultra Alpha")
-    print("Version: ", config.version)
+
+
+
 
 def print_notes():
+    print("Currently this is a pre-release; I hope it is helpful, but nothing is guaranteed.")
+    print("Version: ", config.version)
     return
 
 def wipe_and_reload_db_from_file():
@@ -170,7 +198,8 @@ def displaymainmenu():
     1 - Play game
     p - Preferences and display options
     d - Database tools
-    q/Q - Quit""")
+    c - Copyright and license info
+    q - Quit""")
 
 def mainmenu(conn, cur):
     while True:
@@ -183,8 +212,11 @@ def mainmenu(conn, cur):
         elif choice1.lower() == "d":
             databasemenu()
         elif choice1.lower() == "q":
-            print("Thanks for using the app!  Have any questions?  Contact Marc Perkins at mperkins@student.jyu.fi.")
+            print("Thanks for using the app!  Hope it was helpful! Onnea!")
+            config.printcontactinfo()
             exit()
+        elif choice1.lower() == "c":
+            config.printcopyrightandlicensestatement()
         else:
             print("Hmm, I didn't quite understand that.  Please try again.")
 
@@ -192,8 +224,8 @@ def mainmenu(conn, cur):
 
 #Main portion
 if __name__ == '__main__':
-    print_hi('Something')
-    print_notes()
     conn, cur = osu.connectdb()
+    print_hi()
+    print_notes()
     mainmenu(conn, cur)
 
