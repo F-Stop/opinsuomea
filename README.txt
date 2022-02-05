@@ -1,12 +1,14 @@
 Opin Suomea
 Written by Marc Perkins.
-February 4, 2022.
+February 5, 2022.
 
-A small app to practice Finnish grammar by presenting the user with sentences that are missing one part of them and asking the user to type in the missing portion.  The program has a database of sentences that are broken down into units; users select a unit, and then are prompted with the sentence in Finnish, its English translation, and (optionally) hints.  This app runs entirely locally - no internet connection is needed, and no data is sent to (or received from) the net at any time.
+A small app to practice Finnish grammar by presenting the user with sentences that are missing one part of them and asking the user to type in the missing portion.  The program has the ability to create a database of sentences that are broken down into units; users select a unit, and then are prompted with the sentence in Finnish, its English translation, and (optionally) hints.  This app runs entirely locally - no internet connection is needed, and no data is sent to (or received from) the net at any time.
 
 The program tracks which sentences have been played, and how often they have been answered correctly, to bias selection of sentences to those that have been gotten wrong more often (though any sentence in a unit can be chosen at any time).  More details on how this is done, below.
 
 The program imports sentences from an Excel file (located in the data folder), so the user can customize the units entirely as they want.  Users can also share units easily.  Importing can either be done non-destructively (updating each sentence and/or adding new sentences, but not deleting user history data) or destructively (wiping all existing data from the database, including removing the play-history data for each question).
+
+NOTE: While there are a few sample units included, they were written by a non-Finnish speaker and should not be trusted to be correct.  Make your own sentences!
 
 Data is stored in a SQLLITE database contained in the "data" folder, allowing the program to save information from session to session.  If the database does not exist or gets corrupted somehow, use the in-program option to "wipe database and reload verbs", which will create a brand new database if none exists.  If you want to move data between devices, you will need to manually copy this database file to the new location.
 
@@ -25,14 +27,15 @@ To run:
 5) Run the command "python3 opinsuomea.py"
 
 
-Additional details:
-Sentences have a "score" calculated for them (which is hidden from the user prsently).  All setnences start at 0 when the database is wiped or when a sentence is imported for the first time (updates to sentences, like fixing a typo, leave sentence scores intact). Each time a sentence is answered correctly it gets 2 points, each time a setnence is gotten wrong it gets -1 points.  The program selects sentences from the lower tertile (of score ranges for the selected set of sentence) at triple the rate of sentences with scores in the upper tertile (the middle tertile is chosen at double the rate of hte upper tertile).  Sentences that have never been played get a 4x increase in liklihood of being chosen.  The program also tries to not select sentences that have been presented in the current round (though this may not be possible if sets are small or rounds are long).
+SCORING DETAILS:
+Sentences have a "score" calculated for them (which is hidden from the user prsently).  All sentences start at 0 when the database is wiped or when a sentence is imported for the first time (updates to sentences, like fixing a typo, leave sentence scores intact). Each time a sentence is answered correctly it gets 2 points, each time a sentence is gotten wrong it gets -1 points.  The program selects sentences from the lower tertile (of score ranges for the selected set of sentence) at triple the rate of sentences with scores in the upper tertile (the middle tertile is chosen at double the rate of hte upper tertile).  Sentences that have never been played get a 4x increase in liklehood of being chosen.  The program also tries to not select sentences that have been presented in the current round (though this may not be possible if sets are small or rounds are long).
 
 
-File Importer currently requires the following Python modules:
-openpyxl
+PREFERENCES:
 
+The following variables are available for use globally in the program (being read at program start from the configuration file):
 Configuration file: opinsuomea_config.json
+
   "default_session_length" : 5  - the default number of questions asked in each session of the game
   "check_case" : false - whether case matters for determining if answers are correct or incorrect
   "show_hint": true - show the hint field when presenting a question (hint field is never shown for a particular sentence if there is no hint for it)
@@ -49,10 +52,29 @@ Configuration file: opinsuomea_config.json
   "puhekieli" : true   - whether to include puhekieli lauset in the question pool
 
 
+DISCLAIMER:
+
+Marc Perkins is a hobby programmer who wrote this while starting to learn Finnish in Jyväskylä, Finland.
+
+The programming is basic, and Marc apologizes in advance to skilled programmers who look over the code.
+
+Sentences included are more for demonstration of the program's functioning than actual learning,
+as they were written by Marc, who is probably at the A1 level of comprehension of Finnish.
+
+DEPENDENCIES:
+
+File Importer currently requires the following Python modules:
+openpyxl
+
+CONTRIBUTIONS:
+
+Contributions, either to the sentence list or to the code, would be much appreciated.
+
+See more at: https://github.com/F-Stop/opinsuomea
+
 COPYRIGHT:
 
 Copyright 2022 by Marc Perkins.
-
 
 LICENSE:
 
