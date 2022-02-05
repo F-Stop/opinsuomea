@@ -17,9 +17,10 @@
 import os
 import time
 import re
-import opinsuomea_utils as osu
 from openpyxl import load_workbook
+import opinsuomea_utils as osu
 import config
+
 
 datafilename = "OpinSuomea - Lause tiedot.xlsx"
 #datafilename = "OpinSuomea - Lause tiedot - error test.xlsx"
@@ -27,6 +28,7 @@ datafilename = "OpinSuomea - Lause tiedot.xlsx"
 appfolder = os.path.dirname(__file__)
 datafolder = os.path.join(appfolder, config.jsonconfigdata["data_folder"])
 datafile = os.path.join(datafolder, datafilename)
+
 
 
 def openfile():

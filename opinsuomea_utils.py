@@ -19,7 +19,8 @@ import json
 import os
 import sqlite3
 import re
-from datetime import datetime
+import db_creator
+import file_importer as osfile
 
 class lause:
     dbid = None
@@ -95,12 +96,51 @@ def connectdb():
             cur = conn.cursor()
             print("Connected to", dbfile)
         except:
-            print("No existing database file found when trying to open database.  Exiting.  Database should have been at: ", dbfile)
-            exit()
+            conn, cur = handle_no_db_found_error(dbfile)
     else:
-        print("No existing database file found when trying to open database.  Exiting.  Database should have been at: ", dbfile)
-        exit()
+        conn, cur = handle_no_db_found_error(dbfile)
     return conn, cur
+
+def handle_no_db_found_error(dbfile):
+    conn = None
+    cur = None
+    print("\nNo existing database file found when trying to open database.  Database should have been at: ", dbfile)
+    while True:
+        choice = input("Do you want to create a new database file? (y/n) ")
+        if choice.lower() == "y":
+            wipe_and_reload_db_from_file()
+            conn = sqlite3.connect(dbfile)
+            cur = conn.cursor()
+            print("Connected to", dbfile)
+            break
+        if choice.lower() == "n":
+            print(
+                "\nAlright, we are continuing.  Proceeding without a database will likely lead to crashes and unexpected behavior.")
+            break
+        else:
+            "\nI didn't quite understand that.  Let's try again.\n"
+    return conn, cur
+
+def wipe_and_reload_db_from_file():
+    wb, verbsheet, unitsheets = osfile.openfile()
+    verblist, unitlist, lauselist, errorlist = osfile.parsefile(wb, verbsheet, unitsheets)
+    wasdbwiped = db_creator.createnewdb("USEDEFAULTDB", True) #passing fake name to get that function to use the default db selected in preferences
+    if wasdbwiped:
+        conn, cur = connectdb()
+        verblist, unitlist, lauselist, errorlist = populate_dbs(verblist, unitlist, lauselist, errorlist, conn, cur)
+        printimporterrorlist(errorlist)
+        print("\nAlright, you've got a nice fresh set of databases with new data loaded from the Excel file to use!")
+    else:
+        #DB wiping was aborted by the user, so skip updating setences.
+        print("Databases were left intact - no changes made.")
+
+def update_db_from_file():
+    wb, verbsheet, unitsheets = osfile.openfile()
+    verblist, unitlist, lauselist, errorlist = osfile.parsefile(wb, verbsheet, unitsheets)
+    conn, cur = connectdb()
+    verblist, unitlist, lauselist, errorlist = populate_dbs(verblist, unitlist, lauselist, errorlist, conn, cur)
+    printimporterrorlist(errorlist)
+    print("\nVerbs, Units, and Sentences were updated using the Excel file; your history data should still be intact.")
 
 def populate_dbs(verblist, unitlist, lauselist, errorlist, conn, cur):
     #Assuming that we are populating from scratch or just adding in new ones
@@ -292,3 +332,6 @@ def reporterror(lause, conn, cur):
     print("Error report saved.  Thank you for reporting this, and we apologize for the trouble!")
     print("\nNote: error reports are not automatically emailed to anyone - they are just saved in your local database file.")
     print("You will need to manually make changes yourself, or email the db file to someone, to actually fix the issue.")
+
+
+

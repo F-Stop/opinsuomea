@@ -18,7 +18,6 @@ import opinsuomea_utils as osu
 import file_importer as osfile
 import gameplay as gp
 import db_creator
-import pprint
 import random
 
 
@@ -52,28 +51,6 @@ def print_notes():
     print("Version: ", config.version)
     return
 
-def wipe_and_reload_db_from_file():
-    wb, verbsheet, unitsheets = osfile.openfile()
-    verblist, unitlist, lauselist, errorlist = osfile.parsefile(wb, verbsheet, unitsheets)
-    wasdbwiped = db_creator.createnewdb("USEDEFAULTDB", True) #passing fake name to get that function to use the default db selected in preferences
-    if wasdbwiped:
-        conn, cur = osu.connectdb()
-        verblist, unitlist, lauselist, errorlist = osu.populate_dbs(verblist, unitlist, lauselist, errorlist, conn, cur)
-        osu.printimporterrorlist(errorlist)
-        print("\nAlright, you've got a nice fresh set of databases with new data loaded from the Excel file to use!")
-    else:
-        #DB wiping was aborted by the user, so skip updating setences.
-        print("Databases were left intact - no changes made.")
-
-
-
-def update_db_from_file():
-    wb, verbsheet, unitsheets = osfile.openfile()
-    verblist, unitlist, lauselist, errorlist = osfile.parsefile(wb, verbsheet, unitsheets)
-    conn, cur = osu.connectdb()
-    verblist, unitlist, lauselist, errorlist = osu.populate_dbs(verblist, unitlist, lauselist, errorlist, conn, cur)
-    osu.printimporterrorlist(errorlist)
-    print("\nVerbs, Units, and Sentences were updated using the Excel file; your history data should still be intact.")
 
 
 
@@ -184,9 +161,9 @@ def databasemenu():
                 else:
                     print("Leaving error reports intact, boss.  Note that error reports are not cleared when importing - they must be manually cleared via this menu option.")
         elif choice1.lower() == "u": #Update database nondestructively from Excel file, leaving gameplay data intact.
-            update_db_from_file()
+            osu.update_db_from_file()
         elif choice1.lower() == "d": #Update database destructively, wiping database clean before re-importing from Excel file.
-            wipe_and_reload_db_from_file()
+            osu.wipe_and_reload_db_from_file()
         elif choice1.lower() == "":
             print("Back to main menu!")
             return()
