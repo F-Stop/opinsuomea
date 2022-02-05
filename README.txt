@@ -1,6 +1,7 @@
 Opin Suomea
 Written by Marc Perkins.
 February 5, 2022.
+v0.1
 
 A small command-line (hobby) Python script to practice Finnish grammar by presenting the user with sentences that are missing one part of them and asking the user to type in the missing portion.  The program has the ability to create a database of sentences that are broken down into units; users select a unit, and then are prompted with the sentence in Finnish, its English translation, and (optionally) hints.  This app runs entirely locally - no internet connection is needed, and no data is sent to (or received from) the net at any time.
 
